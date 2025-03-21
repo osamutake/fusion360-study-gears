@@ -1,9 +1,9 @@
 {
 	"autodeskProduct":	"Fusion",
 	"type":	"script",
-	"author":	"",
+	"author":	"Osamu Takeuchi <osamu@big.jp>",
 	"description":	{
-		"":	""
+		"":	"Let's study gears!"
 	},
 	"supportedOS":	"windows|mac",
 	"editEnabled":	true

@@ -1,0 +1,6 @@
+[submodule "docs"]
+	path = docs
+	url = https://github.com/osamutake/fusion360-study-gears-docs.git
+[submodule "modules/lib/fusion_helper"]
+	path = modules/lib/fusion_helper
+	url = https://github.com/osamutake/fusion360-helper.git
