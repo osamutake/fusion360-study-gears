@@ -112,8 +112,8 @@ Spiral curves and cum shapes can be generated on this tab.
 
 ## Tutorials
 
-- ![Basics of gears](https://github.com/osamutake/fusion360-study-gears-docs/blob/master/basics.md)
-- ![Spur gear](https://github.com/osamutake/fusion360-study-gears-docs/blob/master/spur-gear.md)
+- [Basics of gears](https://github.com/osamutake/fusion360-study-gears-docs/blob/master/basics.md)
+- [Spur gear](https://github.com/osamutake/fusion360-study-gears-docs/blob/master/spur-gear.md)
 
 <a href="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/basics.md">
 <img title="Basics of gears" src="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/module.png" height="100"/>

@@ -110,8 +110,8 @@ MIT
 
 # チュートリアル
 
-- ![歯車の基礎知識](https://github.com/osamutake/fusion360-study-gears-docs/blob/master/basics.md)
-- ![平歯車](https://github.com/osamutake/fusion360-study-gears-docs/blob/master/spur-gear.md)
+- [歯車の基礎知識](https://github.com/osamutake/fusion360-study-gears-docs/blob/master/basics.md)
+- [平歯車](https://github.com/osamutake/fusion360-study-gears-docs/blob/master/spur-gear.md)
 
 <a href="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/basics-ja.md">
 <img title="歯車の基礎知識" src="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/module.png" height="100"/>
