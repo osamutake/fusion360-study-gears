@@ -37,6 +37,9 @@
 <a href="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/fillet1.png"><img src="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/fillet1.png" width="200"/></a>
 <a href="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/fillet2.png"><img src="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/fillet2.png" width="200"/></a>
 
+# 作者
+
+Osamu Takeuchi <osamu@big.jp>
 
 # 免責
 
@@ -111,11 +114,15 @@ MIT
 # チュートリアル
 
 - [歯車の基礎知識](https://github.com/osamutake/fusion360-study-gears-docs/blob/master/basics-ja.md)
+- [パラメータリファレンス](https://github.com/osamutake/fusion360-study-gears-docs/blob/master/parameters-ja.md)
 - [平歯車](https://github.com/osamutake/fusion360-study-gears-docs/blob/master/spur-gear-ja.md)
 
 <a href="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/basics-ja.md">
 <img title="歯車の基礎知識" src="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/module.png" height="100"/>
 </a>
+<a href="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/parameters-ja.md">
+<img title="平歯車" src="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/details.png" height="100"/>
+</a>
 <a href="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/spur-gear-ja.md">
-<img title="平歯車" src="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/spur.gif" width="145" height="100"/>
+<img title="平歯車" src="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/spur.gif" height="100"/>
 </a>
