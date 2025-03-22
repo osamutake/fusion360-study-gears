@@ -117,16 +117,20 @@ MIT
 - [パラメータリファレンス](https://github.com/osamutake/fusion360-study-gears-docs/blob/master/parameters-ja.md)
 - [平歯車](https://github.com/osamutake/fusion360-study-gears-docs/blob/master/spur-gear-ja.md)
 - [はすば歯車](https://github.com/osamutake/fusion360-study-gears-docs/blob/master/helical-ja.md)
+- [ねじ歯車](https://github.com/osamutake/fusion360-study-gears-docs/blob/master/screw-ja.md)
 
 <a href="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/basics-ja.md">
 <img title="歯車の基礎知識" src="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/module.png" height="100"/>
 </a>
 <a href="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/parameters-ja.md">
-<img title="平歯車" src="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/details.png" height="100"/>
+<img title="パラメータ詳細" src="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/details.png" height="100"/>
 </a>
 <a href="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/spur-gear-ja.md">
 <img title="平歯車" src="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/spur.gif" height="100"/>
 </a>
 <a href="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/helical-ja.md">
-<img title="平歯車" src="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/helical.gif" height="100"/>
+<img title="はすば車" src="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/helical.gif" height="100"/>
+</a>
+<a href="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/screw-ja.md">
+<img title="ねじ車" src="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/screw10.gif" height="100"/>
 </a>
