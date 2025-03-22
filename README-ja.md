@@ -116,6 +116,7 @@ MIT
 - [歯車の基礎知識](https://github.com/osamutake/fusion360-study-gears-docs/blob/master/basics-ja.md)
 - [パラメータリファレンス](https://github.com/osamutake/fusion360-study-gears-docs/blob/master/parameters-ja.md)
 - [平歯車](https://github.com/osamutake/fusion360-study-gears-docs/blob/master/spur-gear-ja.md)
+- [はすば歯車](https://github.com/osamutake/fusion360-study-gears-docs/blob/master/helical-ja.md)
 
 <a href="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/basics-ja.md">
 <img title="歯車の基礎知識" src="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/module.png" height="100"/>
@@ -125,4 +126,7 @@ MIT
 </a>
 <a href="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/spur-gear-ja.md">
 <img title="平歯車" src="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/spur.gif" height="100"/>
+</a>
+<a href="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/helical-ja.md">
+<img title="平歯車" src="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/helical.gif" height="100"/>
 </a>
