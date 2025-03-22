@@ -117,11 +117,20 @@ Spiral curves and cum shapes can be generated on this tab.
 ## Tutorials
 
 - [Basics of gears](https://github.com/osamutake/fusion360-study-gears-docs/blob/master/basics.md)
+- [Reference of parameters](https://github.com/osamutake/fusion360-study-gears-docs/blob/master/parameters.md)
 - [Spur gear](https://github.com/osamutake/fusion360-study-gears-docs/blob/master/spur-gear.md)
-
+- [Helical gear](https://github.com/osamutake/fusion360-study-gears-docs/blob/master/helical.md)
+- [Screw gear](https://github.com/osamutake/fusion360-study-gears-docs/blob/master/screw.md)
+- 
 <a href="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/basics.md">
 <img title="Basics of gears" src="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/module.png" height="100"/>
 </a>
 <a href="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/spur-gear.md">
 <img title="Spur gear" src="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/spur.gif" width="145" height="100"/>
+</a>
+<a href="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/helical.md">
+<img title="Helical gear" src="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/helical.gif" height="100"/>
+</a>
+<a href="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/screw.md">
+<img title="Screw Gear" src="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/screw-gear10.gif" height="100"/>
 </a>

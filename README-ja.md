@@ -132,5 +132,5 @@ MIT
 <img title="はすば車" src="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/helical.gif" height="100"/>
 </a>
 <a href="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/screw-ja.md">
-<img title="ねじ車" src="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/screw-gear10.gif" height="100"/>
+<img title="ねじ歯車" src="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/screw-gear10.gif" height="100"/>
 </a>
