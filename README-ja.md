@@ -54,6 +54,7 @@ MIT
 # サブモジュール
 
 - /docs : https://github.com/osamutake/fusion360-study-gears-docs
+- /calc : https://github.com/osamutake/fusion360-study-gears-calc
 - /modules/lib/fusion_helper : https://github.com/osamutake/fusion360-helper
 
 # ダウンロードとインストール
@@ -66,6 +67,20 @@ MIT
 2. `study-gears` を選択し、`Run` ボタンを押すか、`study-gears` をダブルクリックしてスクリプトのフロントパネルを起動します。
 3. パラメータを変更せず `Ok` ボタンを押せば平歯車が生成されます。<br><br>
 <img src="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/first-spur-gear.jpg" width="300"/>
+
+# 歯車設計計算機
+
+歯車の設計に役立つ各種計算をブラウザ上で行える計算機を同梱しています。
+
+[歯車設計計算機](./calc.html)
+
+- 平歯車・はすば歯車: 軸間距離を計算
+- 平歯車・はすば歯車: 中心間距離から転位量を計算
+- 内歯車: 軸間距離を計算
+- 内歯車: 中心距離から転位を計算
+- かさ歯車
+
+に関する計算を行えます。
 
 # ４つのタブの紹介
 

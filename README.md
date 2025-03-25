@@ -57,6 +57,7 @@ MIT
 # Submodules
 
 - /docs : https://github.com/osamutake/fusion360-study-gears-docs
+- /calc : https://github.com/osamutake/fusion360-study-gears-calc
 - /modules/lib/fusion_helper : https://github.com/osamutake/fusion360-helper
 
 # Download & install
@@ -69,6 +70,20 @@ Download the  zip file from newest release page and place the `study-gears` fold
 2. Select `study-gears` and press `Run` button or just double click `study-gears` to activate the front panel of the script.
 3. For the first trial, just press `Ok` button without changing parameters, to find a spur gear generated.<br><br>
 <img src="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/first-spur-gear.jpg" width="300"/>
+
+# Gear design calculator
+
+A calculator that does calculations for gear design on web browsers is included in this package.
+
+[Gear design calculator](./calc.html)
+
+- Spur&helical gear: Calculate center distance
+- Spur&helical gear: Calculate shift from center distance
+- Internal gear: calculate center distance
+- Internal gear: Calculate shift from center distance
+- Bevel Gear
+
+These calculations can be done with the calculator.
 
 # Brief introduction of four tabs
 
@@ -121,9 +136,13 @@ Spiral curves and cum shapes can be generated on this tab.
 - [Spur gear](https://github.com/osamutake/fusion360-study-gears-docs/blob/master/spur-gear.md)
 - [Helical gear](https://github.com/osamutake/fusion360-study-gears-docs/blob/master/helical.md)
 - [Screw gear](https://github.com/osamutake/fusion360-study-gears-docs/blob/master/screw.md)
-- 
+
+
 <a href="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/basics.md">
 <img title="Basics of gears" src="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/module.png" height="100"/>
+</a>
+<a href="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/parameters.md">
+<img title="Reference of Parameters" src="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/details.png" height="100"/>
 </a>
 <a href="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/spur-gear.md">
 <img title="Spur gear" src="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/spur.gif" width="145" height="100"/>

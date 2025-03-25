@@ -27,21 +27,31 @@ jobs:
         sed -i 's/\.md"/\.html"/g' README.md README-ja.md docs/*.md
         sed -i 's/\.md)/\.html)/g' README.md README-ja.md docs/*.md
 
-    - name: Set up Node.js
-      uses: actions/setup-node@v3
+    - uses: pnpm/action-setup@v4
+      name: Install pnpm
+      with:
+        version: 10
 
     - name: Install dependencies
-      run: npm i -g markdown-to-html-cli
+      run: pnpm i -g markdown-to-html-cli
 
     - name: Convert .md to .html
       run: |
         ls *.md docs/*.md | sed 's/\.md$//' | xargs -I {} markdown-to-html --source {}.md --output {}.html --title {} --no-dark-mode
         sed -i 's/<\/head>/<link rel="stylesheet" href="https:\/\/cdn.jsdelivr.net\/npm\/katex@0.16.21\/dist\/katex.min.css" integrity="sha384-zh0CIslj+VczCZtlzBcjt5ppRcsAmDnRem7ESsYwWwg3m\/OaJ2l4x7YBZl9Kxxib" crossorigin="anonymous"><script defer src="https:\/\/cdn.jsdelivr.net\/npm\/katex@0.16.21\/dist\/katex.min.js" integrity="sha384-Rma6DA2IPUwhNxmrB\/7S3Tno0YY7sFu9WSYMCuulLhIqYSGZ2gKCJWIqhBWqMQfh" crossorigin="anonymous"><\/script><script defer src="https:\/\/cdn.jsdelivr.net\/npm\/katex@0.16.21\/dist\/contrib\/auto-render.min.js" integrity="sha384-hCXGrW6PitJEwbkoStFjeJxv+fSOOQKOPbJxSfM6G5sWZjAyWhXiTIIAmQqnlLlh" crossorigin="anonymous" onload="renderMathInElement(document.body, {delimiters: [{left: '"'"'\$\$'"'"', right: '"'"'\$\$'"'"', display: true}, {left: '"'"'\$'"'"', right: '"'"'\$'"'"', display: false}], throwOnError : false});"><\/script><\/head>/' *.html docs/*.html
 
+    - name: Create calc.html
+      run: |
+        cd calc
+        pnpm i --frozen-lockfile --strict-peer-dependencies
+        pnpm run build
+        cd ..
+        cp calc/dist/calc.html .
+
     - name: Create zip file
       run: |
         mkdir study-gears
-        ls -a | grep -vE '^(\.\.?|\.git(|ignore|hub)|study-gears)$' | xargs -I {} mv {} study-gears
+        ls -a | grep -vE '^(\.\.?|\.git(|ignore|hub)|calc|study-gears)$' | xargs -I {} mv {} study-gears
         zip -r study-gears_${{ github.ref_name }}.zip study-gears
 
     - name: Upload assets
