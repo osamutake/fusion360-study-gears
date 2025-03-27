@@ -133,6 +133,9 @@ MIT
 - [平歯車](https://github.com/osamutake/fusion360-study-gears-docs/blob/master/spur-gear-ja.md)
 - [はすば歯車](https://github.com/osamutake/fusion360-study-gears-docs/blob/master/helical-ja.md)
 - [ねじ歯車](https://github.com/osamutake/fusion360-study-gears-docs/blob/master/screw-ja.md)
+- [内歯車](https://github.com/osamutake/fusion360-study-gears-docs/blob/master/internal-ja.md)
+- [ラック＆ピニオン](https://github.com/osamutake/fusion360-study-gears-docs/blob/master/rack-ja.md)
+- [ウォーム＆ウォームホイール](https://github.com/osamutake/fusion360-study-gears-docs/blob/master/worm_and_wheel-ja.md)
 
 <a href="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/basics-ja.md">
 <img title="歯車の基礎知識" src="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/module.png" height="100"/>
@@ -148,4 +151,13 @@ MIT
 </a>
 <a href="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/screw-ja.md">
 <img title="ねじ歯車" src="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/screw-gear10.gif" height="100"/>
+</a>
+<a href="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/internal-ja.md">
+<img title="内歯車" src="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/internal.gif" height="100"/>
+</a>
+<a href="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/rack-ja.md">
+<img title="ラック＆ピニオン" src="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/rack.gif" height="100"/>
+</a>
+<a href="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/worm_and_wheel-ja.md">
+<img title="ウォーム＆ホイール" src="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/worm+wheel.gif" height="100"/>
 </a>

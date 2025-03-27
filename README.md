@@ -136,6 +136,9 @@ Spiral curves and cum shapes can be generated on this tab.
 - [Spur gear](https://github.com/osamutake/fusion360-study-gears-docs/blob/master/spur-gear.md)
 - [Helical gear](https://github.com/osamutake/fusion360-study-gears-docs/blob/master/helical.md)
 - [Screw gear](https://github.com/osamutake/fusion360-study-gears-docs/blob/master/screw.md)
+- [Internal gear](https://github.com/osamutake/fusion360-study-gears-docs/blob/master/internal.md)
+- [Rack and pinion](https://github.com/osamutake/fusion360-study-gears-docs/blob/master/rack.md)
+- [Worm and Worm wheel](https://github.com/osamutake/fusion360-study-gears-docs/blob/master/worm_and_wheel.md)
 
 
 <a href="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/basics.md">
@@ -152,4 +155,13 @@ Spiral curves and cum shapes can be generated on this tab.
 </a>
 <a href="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/screw.md">
 <img title="Screw Gear" src="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/screw-gear10.gif" height="100"/>
+</a>
+<a href="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/internal.md">
+<img title="Internal gear" src="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/internal.gif" height="100"/>
+</a>
+<a href="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/rack.md">
+<img title="Rack and Pinion" src="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/rack.gif" height="100"/>
+</a>
+<a href="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/worm_and_wheel.md">
+<img title="Worm and Worm wheel" src="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/worm+wheel.gif" height="100"/>
 </a>
