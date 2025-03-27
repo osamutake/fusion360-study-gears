@@ -43,9 +43,9 @@ jobs:
 
     - name: Create zip file
       run: |
-        mkdir study-gears
-        ls -a | grep -vE '^(\.\.?|\.git(|ignore|hub)|calc|study-gears)$|/\.git$' | xargs -I {} mv {} study-gears
-        zip -r study-gears_${{ github.ref_name }}.zip study-gears
+        mkdir study_gears
+        ls -a | grep -vE '^(\.\.?|\.git(|ignore|hub)|calc|study-gears)$|/\.git$' | xargs -I {} mv {} study_gears
+        zip -r study-gears_${{ github.ref_name }}.zip study_gears
 
     - name: Upload assets
       id: upload-assets
