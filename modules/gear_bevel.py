@@ -1,13 +1,12 @@
-from math import asin, atan, tan, sin, cos, pi, log, ceil
-from collections.abc import Callable
-from typing import cast
+from math import asin, acos, atan, tan, sin, cos, pi, atan2, sqrt
+from collections.abc import Iterable
+from typing import Literal, cast
 
 import adsk.core, adsk.fusion
 
-from . import gear_curve
 from .lib import fusion_helper as fh
-from .lib.fusion_helper import Vector, vec, polar
-from .lib.curve import Curve
+from .lib.fusion_helper import Vector
+from .lib.function import minimize
 
 
 def gear_bevel(
@@ -17,316 +16,355 @@ def gear_bevel(
     z2: int,
     width: float,
     beta: float,
-    shift: float,
     addendum: float,
     dedendum: float,
-    rc: float,
     pressure_angle: float,
-    fillet: float,
     backlash: float,
 ):
-    m, sigma, alphan, betam, b = module, axes_angle, pressure_angle, beta, width
+    m, sigma, alpha, mk, mf = (
+        module,
+        axes_angle,
+        pressure_angle,
+        addendum,
+        dedendum,
+    )
 
-    alphat = atan(tan(alphan) / cos(betam))
-    # d1 = z1 * m
-    d2 = z2 * m
-    delta1 = atan(sin(sigma) / (z2 / z1 + cos(sigma)))
-    delta2 = sigma - delta1
-    r = d2 / (2 * sin(delta2))
-    h = (addendum + dedendum) * m
-    ha = addendum * m
-    hf = h - ha
-    thetaf = atan(hf / r)
-    thetaa = atan(ha / r)
-    deltaa1 = delta1 + thetaa
-    deltaa2 = delta2 + thetaa
-    deltaf1 = delta1 - thetaf
-    deltaf2 = delta2 - thetaf
+    gamma_p1 = atan2(sin(sigma), z2 / z1 + cos(sigma))
+    r = z1 / (2 * sin(gamma_p1))
+    r0 = r * m
+    rm = 1 / r
+
+    gamma_f1 = gamma_p1 - mf * atan(rm)
+    gamma_k1 = gamma_p1 + mk * atan(rm)
+    gamma_t1 = gamma_p1 + mf * atan(rm)
+    gamma_b1 = asin(cos(alpha) * sin(gamma_p1))
+
+    gamma_p2 = sigma - gamma_p1
+    gamma_f2 = gamma_p2 - mf * atan(rm)
+    gamma_k2 = gamma_p2 + mk * atan(rm)
+    gamma_t2 = gamma_p2 + mf * atan(rm)
+    gamma_b2 = asin(cos(alpha) * sin(gamma_p2))
+
+    axis1 = Vector(cos(gamma_p1), 0, sin(gamma_p1))
+    axis2 = Vector(cos(gamma_p2), 0, -sin(gamma_p2))
+
+    def rotate(v: Vector, axis: Vector, angle: float):
+        # rotate around axis by angle (in radians)
+        axis = axis.normalize()
+        cos_a = cos(angle)
+        sin_a = sin(angle)
+        dot = v.dot(axis)
+        cross = v.cross(axis)
+        return v * cos_a + cross * sin_a + axis * dot * (1 - cos_a)
+
+    def trans(epsilon: float, v: Vector, axis: Vector, gamma_b: float):
+        axis = axis.normalize(cos(gamma_b))
+        v = v.normalize()
+        oq = v - axis
+        om = rotate(oq, axis, epsilon)
+        oom = axis + om
+        axis2 = oom - axis.normalize(1 / cos(gamma_b))
+        op = rotate(oom, axis2, epsilon * sin(gamma_b))
+        return op
+
+    def gamma2theta(gamma: float, gamma_b: float):
+        varphi = acos(cos(gamma) / cos(gamma_b))
+        return varphi / sin(gamma_b) - atan2(tan(varphi), sin(gamma_b))
+
+    def gamma2epsilon(gamma: float, gamma_b: float):
+        varphi = acos(cos(gamma) / cos(gamma_b))
+        return varphi / sin(gamma_b)
+
+    def spherical_involute(
+        axis: Vector, v: Vector, gamma_b: float, gamma_s: float, gamma_e: float, n=20
+    ):
+        points: list[Vector] = []
+        ts = gamma2epsilon(gamma_s, gamma_b)
+        te = gamma2epsilon(gamma_e, gamma_b)
+        for i in range(0, n + 1):
+            t = ts + ((te - ts) / n) * i
+            points.append(trans(t, v, axis, gamma_b))
+        return points
+
+    def rotate_around(v: Vector, axis: Vector, angle: float):
+        axis = axis.normalize(axis.normalize().dot(v))
+        return axis + rotate(v - axis, axis, angle)
+
+    def spherical_trochoid(
+        t1: Vector,
+        q2: Vector,
+        axis1: Vector,
+        axis2: Vector,
+        z1: float,
+        z2: float,
+        tooth2: list[Vector],
+        gamma_b2: float,
+        gamma_f2: float,
+        n=10,
+    ):
+        def trochoid2(t: float):
+            return rotate_around(rotate_around(t1, axis1, -t), axis2, (-t / z2) * z1)
+
+        c1: list[Vector] = []
+        i = 0
+        while True:
+            t = (0.02 * (i * pi)) / sqrt(z1)
+            c1.append(trochoid2(t))
+            if (c1[-1] - axis2).norm() > (tooth2[-1] - axis2).norm():
+                t1a = minimize(0, t, lambda t: (trochoid2(t) - axis2).norm())
+                t1b = t
+                break
+            i += 1
+
+        if gamma_b2 > gamma_f2:
+            t1c = minimize(
+                t1a, t1b, lambda t: abs((trochoid2(t) - axis2).norm() - (q2 - axis2).norm())
+            )
+        else:
+            t1c = t1a
+
+        def distance_from_involute(t: float):
+            v = trochoid2(t)
+            gamma = acos(v.dot(axis2))
+            u = trans(gamma2epsilon(gamma, gamma_b2), q2, axis2, gamma_b2)
+            return (u - v).norm()
+
+        # find the point on the involute curve that is closest to the trochoid curve
+        t1d = minimize(t1c, t1b, distance_from_involute)
+
+        c1.clear()
+        for i in range(0, n + 1):
+            t = t1a + ((t1d - t1a) * i) / n
+            c1.append(trochoid2(t))
+
+        gamma = acos(c1[-1].dot(axis2))
+        return (c1, gamma)
+
+    def apply_backlash(curve: list[Vector], axis: Vector, z: float):
+        def angle(p: Vector):
+            return acos(
+                (p - axis.normalize(p.dot(axis)))
+                .normalize()
+                .dot((Vector(1, 0, 0) - axis.normalize(Vector(1, 0, 0).dot(axis))).normalize())
+            )
+
+        curve = [rotate(r0 * p, axis, backlash / (m * z / 2)) for p in curve]
+        if angle(curve[0]) > pi / z / 2:
+            while angle(curve[0]) > pi / z / 2:
+                curve.pop(0)
+        if angle(curve[-1]) > pi / z / 2:
+            while angle(curve[-1]) > pi / z / 2:
+                curve.pop()
+        return curve
+
+    def generate_arc(
+        axis: Vector,
+        p1: Vector,
+        p2: Vector,
+        great_circle=False,
+        n=6,
+    ):
+        c: list[Vector] = []
+        if great_circle:
+            v1 = p1
+            v2 = p2
+            t = acos(v1.dot(v2) / (v1.norm() * v2.norm()))
+            for j in range(0, n + 1):
+                t2 = (t * j) / n
+                c.append(rotate(v1, axis, t2))
+        else:
+            axis = axis.normalize(axis.normalize().dot(p1))
+            v1 = p1 - axis
+            v2 = p2 - axis
+            t = acos(v1.dot(v2) / (v1.norm() * v2.norm()))
+            for j in range(0, n + 1):
+                t2 = (t * j) / n
+                c.append(axis + rotate(v1, axis, t2))
+        return c
+
+    def gear_curves():
+        # base point on the base circle
+        q1 = rotate(
+            Vector(cos(gamma_p1 - gamma_b1), 0, sin(gamma_p1 - gamma_b1)),
+            axis1,
+            -gamma2theta(gamma_p1, gamma_b1),
+        )
+        involute1 = spherical_involute(axis1, q1, gamma_b1, max(gamma_b1, gamma_f1), gamma_k1)
+        # tip point on the extended tip circle
+        t1 = trans(gamma2epsilon(gamma_t1, gamma_b1), q1, axis1, gamma_b1)
+
+        # base point on the base circle
+        q2 = rotate(
+            Vector(cos(gamma_p2 - gamma_b2), 0, -sin(gamma_p2 - gamma_b2)),
+            axis2,
+            -gamma2theta(gamma_p2, gamma_b2),
+        )
+        involute2 = spherical_involute(axis2, q2, gamma_b2, max(gamma_b2, gamma_f2), gamma_k2)
+        # tip point on the extended tip circle
+        t2 = trans(gamma2epsilon(gamma_t2, gamma_b2), q2, axis2, gamma_b2)
+
+        trochoid1, gamma1 = spherical_trochoid(
+            t2, q1, axis2, axis1, z2, z1, involute1, gamma_b1, gamma_f1
+        )
+        involute1 = spherical_involute(axis1, q1, gamma_b1, gamma1, gamma_k1 + rm * 0.1)
+
+        trochoid2, gamma2 = spherical_trochoid(
+            t1, q2, axis1, axis2, z1, z2, involute2, gamma_b2, gamma_f2
+        )
+        involute2 = spherical_involute(axis2, q2, gamma_b2, gamma2, gamma_k2 + rm * 0.1)
+
+        return trochoid1, involute1, trochoid2, involute2
+
+    trochoid1, involute1, trochoid2, involute2 = gear_curves()
+
+    def tooth_profile(trochoid: list[Vector], involute: list[Vector], axis: Vector, z: float):
+        trochoid1 = apply_backlash(trochoid, axis, z)
+        involute1 = apply_backlash(involute, axis, z)
+        involute2 = [rotate(p.flip_y(), axis, -pi / z) for p in involute1]
+        trochoid2 = [rotate(p.flip_y(), axis, -pi / z) for p in trochoid1]
+        bottom = generate_arc(axis, trochoid2[0], trochoid1[0])
+        top = generate_arc(axis, involute2[-1], involute1[-1])
+        return [
+            reversed(involute1),
+            reversed(trochoid1),
+            reversed(bottom),
+            trochoid2,
+            involute2,
+            top,
+        ]
+
+    def connect_by_splines(sketch: adsk.fusion.Sketch, curves: list[Iterable[Vector]]):
+        result: list[adsk.fusion.SketchFittedSpline] = []
+        for i, curve in enumerate(curves):
+            points = [fh.point3d(p) for p in curve]
+            if i == 0:
+                pass
+            else:
+                points[0] = result[i - 1].endSketchPoint
+                if i == len(curves) - 1:
+                    points[-1] = result[0].startSketchPoint
+            result.append(sketch.sketchCurves.sketchFittedSplines.add(fh.collection(points)))
+        return result
+
+    def line(
+        sketch: adsk.fusion.Sketch, p1: Vector | adsk.core.Point3D, p2: Vector | adsk.core.Point3D
+    ):
+        if isinstance(p1, Vector):
+            p1 = fh.point3d(p1)
+        if isinstance(p2, Vector):
+            p2 = fh.point3d(p2)
+        return sketch.sketchCurves.sketchLines.addByTwoPoints(
+            cast(adsk.core.Point3D, p1), cast(adsk.core.Point3D, p2)
+        )
+
+    def generate_gear(
+        comp: adsk.fusion.Component,
+        axis: Vector,
+        z: int,
+        trochoid: list[Vector],
+        involute: list[Vector],
+        flip: Literal[1, -1],
+    ):
+        sketch1 = comp.sketches.add(comp.xYConstructionPlane)
+        sketch1.isComputeDeferred = True
+        connect_by_splines(sketch1, tooth_profile(trochoid, involute, axis, z))
+        patch = fh.comp_patch(comp, sketch1.sketchCurves[0], fh.FeatureOperations.new_body)
+        sketch1.isVisible = False
+        sketch1.isComputeDeferred = False
+
+        sketch2 = comp.sketches.add(comp.xYConstructionPlane)
+        sketch2.isComputeDeferred = True
+        va = Vector(r0, 0, -mk * m * flip)
+        vb = Vector(r0, 0, (mf + 1) * m * flip)
+        vas = va * ((r0 - width) / r0)
+        vbs = vb * ((r0 - width) / r0)
+        la = line(sketch2, va, vb)
+        lb = line(sketch2, vas, vbs)
+        line(sketch2, la.startSketchPoint, lb.startSketchPoint)
+        vax0 = axis.normalize(r0 * sqrt(1 - (rm * z / 2) ** 2))
+        vax1 = axis.normalize(axis.normalize().dot(vb))
+        vax2 = axis.normalize(axis.normalize().dot(vbs))
+        lc = line(sketch2, la.endSketchPoint, vax1)
+        ld = line(sketch2, lb.endSketchPoint, vax2)
+        le = line(sketch2, lc.endSketchPoint, ld.endSketchPoint)
+        sketch2.isComputeDeferred = False
+
+        body = fh.comp_revolve(comp, sketch2.profiles[0], le, fh.FeatureOperations.new_body)
+
+        # refresh the viewport
+        adsk.doEvents()
+        adsk.core.Application.get().activeViewport.refresh()
+
+        patch1 = fh.comp_copy(comp, patch.bodies[0])
+        patch1 = fh.comp_scale(comp, patch1.bodies[0], comp.originConstructionPoint, 1.1)
+        patch2 = fh.comp_copy(comp, patch.bodies[0])
+        patch2 = fh.comp_scale(
+            comp, patch2.bodies[0], comp.originConstructionPoint, (r0 - width) / r0 * 0.9
+        )
+        tooth = fh.comp_loft(
+            comp, fh.FeatureOperations.cut, [patch1.faces[0], patch2.faces[0]], [body.bodies[0]]
+        )
+        fh.comp_remove(comp, [patch.bodies[0], patch1.bodies[0], patch2.bodies[0]])
+        fh.comp_circular_pattern(comp, tooth, le, z)
+
+        # refresh the viewport
+        adsk.doEvents()
+        adsk.core.Application.get().activeViewport.refresh()
+        return vax0, vax1
 
     app = adsk.core.Application.get()
     design = adsk.fusion.Design.cast(app.activeProduct)
 
     # Create the wrapper component
     comp_occurrence = design.activeComponent.occurrences.addNewComponent(
-        adsk.core.Matrix3D.create()
+        fh.matrix_rotate(pi / 2 - gamma_p2, fh.vector3d(0, 1, 0))
     )
+    comp_occurrence.isGroundToParent = False
     comp = comp_occurrence.component
     # pylint: disable=inconsistent-quotes
-    comp.name = f"Bevel{format(round(m*10,2),"g")}M{z1}T{z2}T{format(round((delta1+delta2)/pi*180,2), 'g')}deg"
-
-    def build_gear(
-        gear: adsk.fusion.Component,
-        deltaa: float,
-        delta: float,
-        deltaf: float,
-        z: int,
-        beta: float,
-    ):
-        # rotational axis is x-axis
-        # the other gear's axis is tilted from x-axis towards y-axis
-        sketch = gear.sketches.add(gear.xYConstructionPlane)
-        sketch.isComputeDeferred = True
-        draw_line = sketch.sketchCurves.sketchLines.addByTwoPoints
-        extend = 1.2  # extend the line to make it easier to see
-
-        def p3d(p: Vector):
-            return fh.point3d(p.x, p.y)
-
-        # center line
-        center = draw_line(p3d(vec(0, 0)), p3d(vec(extend * r, 0)))
-        center.isCenterLine = True
-
-        # angled lines
-        line_a = draw_line(p3d(vec(0, 0)), p3d(polar(extend * r, deltaa)))
-        line_p = draw_line(p3d(vec(0, 0)), p3d(polar(extend * r, delta)))
-        line_f = draw_line(p3d(vec(0, 0)), p3d(polar(extend * r, deltaf)))
-        for line in [line_a, line_p, line_f]:
-            line.isConstruction = True
-
-        # base shape
-        pp1 = polar(r, delta) + polar(ha, pi / 2 + delta)
-        pp0 = pp1 + polar(h + m, -pi / 2 + delta)
-        pp2 = polar(r - b, delta) + polar(ha * (r - b) / r, pi / 2 + delta)
-        pp3 = pp2 + polar((h + m) * (r - b) / r, -pi / 2 + delta)
-        pp4 = vec(pp3.x, 0)
-        pp5 = vec(pp0.x, 0)
-
-        lines: list[adsk.fusion.SketchLine] = []
-
-        lines.append(draw_line(p3d(pp0), p3d(pp1)))
-        lines.append(draw_line(lines[-1].endSketchPoint, p3d(pp2)))
-        lines.append(draw_line(lines[-1].endSketchPoint, p3d(pp3)))
-        lines.append(draw_line(lines[-1].endSketchPoint, p3d(pp4)))
-        lines.append(draw_line(lines[-1].endSketchPoint, p3d(pp5)))
-        lines.append(draw_line(lines[-1].endSketchPoint, lines[0].startSketchPoint))
-        for line in sketch.sketchCurves.sketchLines:
-            line.isFixed = True
-
-        # rotation
-        base = fh.comp_revolve(
-            gear, sketch.profiles[0], center, fh.FeatureOperations.new_body
-        ).bodies[0]
-
-        inp = gear.constructionPlanes.createInput()
-        inp.setByDistanceOnPath(line_p, fh.value_input(1 / extend))
-        plane = gear.constructionPlanes.add(inp)
-
-        sketch2 = gear.sketches.add(plane)
-        sketch2.isComputeDeferred = True
-        curves = gear_curve.gear_curve(
-            gear_curve.GearParams(m, z, alphat, shift, fillet, hf / m, ha / m, rc, backlash, False)
-        )
-
-        collection = adsk.core.ObjectCollection.createWithArray
-
-        # delta is rotation angle
-        def vec2point3d(pnt: Vector, delta=0.0, flip_y=False):
-            (r, t) = pnt.to_polar()
-            if flip_y:
-                return fh.point3d(r * cos(t - delta), r * sin(t - delta + pi), 0)
-            else:
-                return fh.point3d(r * cos(t + delta), r * sin(t + delta), 0)
-
-        def draw_part(
-            sketch: adsk.fusion.Sketch,
-            curves: list[tuple[Curve, Vector, Vector]],
-            vec2point3d: Callable[[Vector, float, bool], adsk.core.Point3D],
-            delta=0,
-            last=None,
-            flip_y=False,
-        ):
-            result: list[adsk.fusion.SketchFittedSpline] = []
-            for c in reversed(curves) if flip_y else curves:
-                # c = (curve, tangent1, tangent2)
-                c0 = list(reversed(c[0]) if flip_y else iter(c[0]))
-                if last is None:
-                    last = vec2point3d(c0[0], delta, flip_y)
-                spline = sketch.sketchCurves.sketchFittedSplines.add(
-                    collection([last] + [vec2point3d(pp, delta, flip_y) for pp in c0[1:]])
-                )
-                result.append(spline)
-                last = spline.endSketchPoint
-
-                # if flipped, swap the tangent vectors
-                if not flip_y:
-                    c1, c2 = c[1:3]
-                else:
-                    c2, c1 = c[1:3]
-
-                # add tangent constraints
-                line = sketch.sketchCurves.sketchLines.addByTwoPoints(
-                    spline.startSketchPoint, vec2point3d(c0[0] + c1, delta, flip_y)
-                )
-                line.isConstruction = True
-                line.isFixed = True
-                sketch.geometricConstraints.addTangent(spline, line)
-                line = sketch.sketchCurves.sketchLines.addByTwoPoints(
-                    spline.endSketchPoint, vec2point3d(c0[-1] + c2, delta, flip_y)
-                )
-                line.isConstruction = True
-                line.isFixed = True
-                sketch.geometricConstraints.addTangent(spline, line)
-            return result
-
-        # paste the gear shape onto the cylindrical surface
-        for curve in curves:
-            for i in range(len(curve[0])):
-                curve[0][i].y = r * tan(curve[0][i].y / r)
-            curve[1].y = r * tan(curve[1].y / r)
-            curve[2].y = r * tan(curve[2].y / r)
-
-        # draw the tooth shape
-        lines1 = draw_part(sketch2, curves, vec2point3d, pi / z)
-        lines2 = draw_part(sketch2, curves, vec2point3d, -pi / z, flip_y=True)
-        for curve in sketch2.sketchCurves:
-            curve.isFixed = True
-        # draw the bottom of the tooth
-        if lines1[-1].endSketchPoint.geometry.y != lines2[0].startSketchPoint.geometry.y:
-            sketch2.sketchCurves.sketchArcs.addByCenterStartEnd(
-                fh.point3d(),
-                lines2[0].startSketchPoint,
-                lines1[-1].endSketchPoint,
-                fh.vector3d(z=1),
-            ).isFixed = True
-        # extend the tooth tip
-        l1 = sketch2.sketchCurves.sketchLines.addByTwoPoints(
-            lines1[0].startSketchPoint,
-            vec2point3d(curves[0][0][0] + vec(m, 0), pi / z),
-        )
-        l1.isFixed = True
-        l2 = sketch2.sketchCurves.sketchLines.addByTwoPoints(
-            lines2[-1].endSketchPoint,
-            vec2point3d(curves[0][0][0] + vec(m, 0), -pi / z, flip_y=True),
-        )
-        l2.isFixed = True
-        sketch2.sketchCurves.sketchArcs.addByCenterStartEnd(
-            fh.point3d(), l2.endSketchPoint, l1.endSketchPoint, fh.vector3d(z=1)
-        ).isFixed = True
-
-        # create a patch for the tooth shape
-        patch = fh.comp_patch(gear, [sketch2.profiles[0]], fh.FeatureOperations.new_body)
-
-        # move the patch to the correct position
-        p = p3d(polar(z * m / 2, -pi / 2 + delta))
-        fh.comp_move_free(gear, list(patch.bodies), [fh.matrix_translate(p.x, p.y)])
-
-        # determine the sweep range
-        scale_start = 1.01
-        scale_end = (r - b) * cos(asin(pi * m / 2 / (r - b))) / r * 0.99
-        scale_n = 1 if beta == 0 else max(5, ceil(log(scale_start / scale_end) / 10))
-
-        # create the tooth patches for sweeping
-        patches: list[adsk.fusion.BRepBody] = []
-        for i in range(scale_n + 1):
-            scale = scale_start * (scale_end / scale_start) ** (i / scale_n)
-            copy = fh.comp_copy(gear, patch.bodies[0])
-            fh.comp_scale(gear, list(copy.bodies), gear.originConstructionPoint, scale)
-            if (scale - 1) * tan(beta) != 0:
-                matrix = fh.matrix_rotate(
-                    (scale - 1) * tan(beta) / sin(delta),
-                    fh.vector3d(center.geometry.endPoint),
-                    fh.point3d(),
-                )
-                fh.comp_move_free(gear, list(copy.bodies), [matrix])
-
-            patches.append(copy.bodies[0])
-
-        tooth = fh.comp_loft(gear, fh.FeatureOperations.cut, [p.faces[0] for p in patches], [base])
-
-        fh.comp_remove(gear, [patch.bodies[0]] + patches)
-
-        fh.comp_circular_pattern(gear, [tooth], center, z)
-
-        matrix = fh.matrix_rotate(pi / z / 2, fh.vector3d(x=1), fh.point3d())
-        fh.comp_move_free(gear, [base], [matrix])
-
-        sketch3 = gear.sketches.add(gear.yZConstructionPlane)
-        sketch3.isComputeDeferred = True
-        axis = sketch3.sketchCurves.sketchLines.addByTwoPoints(
-            fh.point3d(z=lines[4].endSketchPoint.geometry.x),
-            fh.point3d(z=lines[4].startSketchPoint.geometry.x),
-        )
-        axis.isConstruction = True
-        axis.isFixed = True
-        circle = sketch3.sketchCurves.sketchCircles.addByCenterRadius(
-            fh.point3d(z=plane.geometry.origin.x), plane.geometry.origin.y
-        )
-        circle.isConstruction = True
-        circle.isFixed = True
-
-        sketch.isComputeDeferred = False
-        sketch2.isComputeDeferred = False
-        sketch3.isComputeDeferred = False
-        return axis
+    comp.name = (
+        f"Bevel{format(round(m*10,2),"g")}M{z1}T{z2}T{format(round(sigma/pi*180,2), 'g')}deg"
+    )
 
     # generate the first gear
     gear1_occurrence = comp.occurrences.addNewComponent(adsk.core.Matrix3D.create())
+    gear1_occurrence.isGroundToParent = False
     gear1 = gear1_occurrence.component
-    gear1.name = (
-        f"bevel{format(round(m*10,2),"g")}M{z1}T{format(round((delta1+delta2)/pi*180,2), "g")}deg"
-    )
-    build_gear(gear1, deltaa1, delta1, deltaf1, z1, beta)
-
-    # refresh the viewport
-    adsk.doEvents()
-    adsk.core.Application.get().activeViewport.refresh()
+    gear1.name = f"bevel{format(round(m*10,2),"g")}M{z1}T{format(round(sigma/pi*180,2), "g")}deg"
+    axis1p = generate_gear(gear1, axis1, z1, trochoid1, involute1, 1)
 
     # generate the second gear
     gear2_occurrence = comp.occurrences.addNewComponent(adsk.core.Matrix3D.create())
     gear2 = gear2_occurrence.component
-    gear2.name = (
-        f"bevel{format(round(m*10,2),"g")}M{z2}T{format(round((delta1+delta2)/pi*180,2), "g")}deg"
-    )
-    build_gear(gear2, deltaa2, delta2, deltaf2, z2, -beta)
+    gear2.name = f"bevel{format(round(m*10,2),"g")}M{z2}T{format(round(sigma/pi*180,2), "g")}deg"
+    axis2p = generate_gear(gear2, axis2, z2, trochoid2, involute2, -1)
 
-    # move to the meshing position
-    for occ in comp.occurrences:
-        occ.isGroundToParent = False
-
-    design.rootComponent.transformOccurrences(
-        [gear2_occurrence.createForAssemblyContext(comp_occurrence)],
-        [
-            fh.matrix_rotate(
-                delta1 + delta2, fh.vector3d(z=1), base=fh.matrix_rotate(pi, fh.vector3d(x=1))
-            )
-        ],
-        False,
-    )
-    design.snapshots.add()  # capture the position
+    sketch0 = comp.sketches.add(comp.xZConstructionPlane)
+    circ0 = sketch0.sketchCurves.sketchCircles.addByCenterRadius(fh.point3d(), r0)
+    circ0.isConstruction = True
+    circ0.isFixed = True
+    sketch0.isVisible = False
 
     # draw the axis of the first gear for joint creation
-    sketch1 = comp.sketches.add(comp.yZConstructionPlane)
-    sketch1.sketchCurves.sketchCircles.addByCenterRadius(
-        fh.point3d(z=gear1.sketches[2].sketchCurves.sketchCircles[0].centerSketchPoint.geometry.z),
-        gear1.sketches[2].sketchCurves.sketchCircles[0].radius,
-    )
-    sketch1.isVisible = False
+    sketch1 = comp.sketches.add(comp.xYConstructionPlane)
+    axis1l = line(sketch1, axis1p[0], axis1p[1])
+    axis2l = line(sketch1, axis2p[0], axis2p[1])
 
-    # draw the axis of the second gear onto the tilted plane for joint creation
-    inp = comp.constructionPlanes.createInput()
-    inp.setByAngle(
-        comp.zConstructionAxis,
-        fh.value_input(delta1 + delta2),
-        comp.yZConstructionPlane,
-    )
-    plane2 = comp.constructionPlanes.add(inp)
-
-    sketch2 = comp.sketches.add(plane2)
-    sketch2.sketchCurves.sketchCircles.addByCenterRadius(
-        fh.point3d(z=gear2.sketches[2].sketchCurves.sketchCircles[0].centerSketchPoint.geometry.z),
-        gear2.sketches[2].sketchCurves.sketchCircles[0].radius,
-    )
+    inp = comp.constructionPlanes.createInput(comp_occurrence)
+    inp.setByDistanceOnPath(axis1l, fh.value_input(0))
+    plane1 = comp.constructionPlanes.add(inp)
+    sketch2 = comp.sketches.add(plane1, comp_occurrence)
+    circ1 = sketch2.sketchCurves.sketchCircles.addByCenterRadius(fh.point3d(), m * z1 / 2)
+    circ1.isFixed = True
     sketch2.isVisible = False
 
-    # create the joints
-
-    fh.comp_built_joint_revolute(
-        comp,
-        comp_occurrence.childOccurrences[1],
-        comp_occurrence,
-        sketch1.profiles[0],
-        cast(adsk.fusion.JointDirections, adsk.fusion.JointDirections.ZAxisJointDirection),
-    )
+    inp = comp.constructionPlanes.createInput(comp_occurrence)
+    inp.setByDistanceOnPath(axis2l, fh.value_input(0))
+    plane2 = comp.constructionPlanes.add(inp)
+    sketch3 = comp.sketches.add(plane2, comp_occurrence)
+    circ2 = sketch3.sketchCurves.sketchCircles.addByCenterRadius(fh.point3d(), m * z2 / 2)
+    circ2.isFixed = True
+    sketch3.isVisible = False
 
     fh.comp_built_joint_revolute(
         comp,
@@ -336,5 +374,13 @@ def gear_bevel(
         cast(adsk.fusion.JointDirections, adsk.fusion.JointDirections.ZAxisJointDirection),
     )
 
-    # creating motion link is not supported in API
-    # https://forums.autodesk.com/t5/fusion-api-and-scripts/adding-motion-link-to-the-fusion-360-api/td-p/11728121
+    fh.comp_built_joint_revolute(
+        comp,
+        comp_occurrence.childOccurrences[1],
+        comp_occurrence,
+        sketch3.profiles[0],
+        cast(adsk.fusion.JointDirections, adsk.fusion.JointDirections.ZAxisJointDirection),
+    )
+
+    # # creating motion link is not supported in API
+    # # https://forums.autodesk.com/t5/fusion-api-and-scripts/adding-motion-link-to-the-fusion-360-api/td-p/11728121

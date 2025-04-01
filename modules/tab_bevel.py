@@ -46,11 +46,8 @@ class TabInput(fh.TabInput[command.Command]):
             self.z2.value,
             self.width.value,
             self.beta.value,
-            self.parent.shift.value,
             self.parent.addendum.value,
             self.parent.dedendum.value,
-            self.parent.r_clearance.value,
             self.parent.pressure_angle.value,
-            self.parent.fillet.value,
             self.parent.backlash.value,
         )
