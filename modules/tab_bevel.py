@@ -31,7 +31,14 @@ class TabInput(fh.TabInput[command.Command]):
         self.z1 = inputs.addIntegerSpinnerCommandInput("bevel_z1", "Num. Teeth 1", 6, 200, 1, 20)
         self.z2 = inputs.addIntegerSpinnerCommandInput("bevel_z2", "Num. Teeth 2", 6, 200, 1, 40)
         self.width = fh.value_control(inputs, "bevel_width", "Width", "mm", "10")
-        self.beta = fh.value_control(inputs, "bevel_beta", "Helical Angle", "deg", "0")
+        self.beta = fh.value_control(inputs, "bevel_beta", "Spiral Angle", "deg", "0")
+        
+    @override
+    def on_changed(self, args: adsk.core.InputChangedEventArgs | None):
+        if self.tab.isActive:
+            self.parent.fillet.isEnabled = False
+            self.parent.shift.isEnabled = False
+            self.parent.r_clearance.isEnabled = False
 
     @override
     def on_execute_or_preview(self, args: adsk.core.CommandEventArgs, is_preview: bool = False):

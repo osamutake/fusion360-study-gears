@@ -75,6 +75,9 @@ class Command(fh.TabbedCommand):
     @override
     def on_changed(self, args: adsk.core.InputChangedEventArgs | None):
         self.tip_fillet.isEnabled = False
+        self.shift.isEnabled = True
+        self.fillet.isEnabled = True
+        self.r_clearance.isEnabled = True
 
         super().on_changed(args)
 
