@@ -29,12 +29,13 @@ def gear_bevel(
         dedendum,
     )
 
-    # adjustment for helical gears
+    # calculate transverse values for helical gears
     m *= 1 / cos(beta)
     mf *= cos(beta)
     mk *= cos(beta)
     alpha = atan(tan(alpha) / cos(beta))
 
+    # basic dimensions
     gamma_p1 = atan2(sin(sigma), z2 / z1 + cos(sigma))
     r = z1 / (2 * sin(gamma_p1))
     r0 = r * m
@@ -55,7 +56,7 @@ def gear_bevel(
     axis2 = Vector(cos(gamma_p2), 0, -sin(gamma_p2))
 
     def rotate(v: Vector, axis: Vector, angle: float):
-        # rotate around axis by angle (in radians)
+        """rotate v around axis by angle (in radians)"""
         axis = axis.normalize()
         cos_a = cos(angle)
         sin_a = sin(angle)
@@ -64,6 +65,8 @@ def gear_bevel(
         return v * cos_a + cross * sin_a + axis * dot * (1 - cos_a)
 
     def trans(epsilon: float, v: Vector, axis: Vector, gamma_b: float):
+        """transform v along base circle by angle specified by epsilon
+        and then pushed back along the great circle by same distance"""
         axis = axis.normalize(cos(gamma_b))
         v = v.normalize()
         oq = v - axis
@@ -92,10 +95,6 @@ def gear_bevel(
             points.append(trans(t, v, axis, gamma_b))
         return points
 
-    def rotate_around(v: Vector, axis: Vector, angle: float):
-        axis = axis.normalize(axis.normalize().dot(v))
-        return axis + rotate(v - axis, axis, angle)
-
     def spherical_trochoid(
         t1: Vector,
         q2: Vector,
@@ -108,29 +107,35 @@ def gear_bevel(
         gamma_f2: float,
         n=10,
     ):
-        def trochoid2(t: float):
-            return rotate_around(rotate_around(t1, axis1, -t), axis2, (-t / z2) * z1)
+        def trochoid_core(t: float):
+            return rotate(rotate(t1, axis1, -t), axis2, (-t / z2) * z1)
 
+        # after touching the bottom circle, reach the tip circle
         c1: list[Vector] = []
         i = 0
         while True:
             t = (0.02 * (i * pi)) / sqrt(z1)
-            c1.append(trochoid2(t))
+            c1.append(trochoid_core(t))
             if (c1[-1] - axis2).norm() > (tooth2[-1] - axis2).norm():
-                t1a = minimize(0, t, lambda t: (trochoid2(t) - axis2).norm())
+                # find the touching point to the bottom circle
+                t1a = minimize(0, t, lambda t: (trochoid_core(t) - axis2).norm())
+                # the point higher than the tip circle
                 t1b = t
                 break
             i += 1
 
         if gamma_b2 > gamma_f2:
+            # find the point the trochoid curve crosses the base circle
             t1c = minimize(
-                t1a, t1b, lambda t: abs((trochoid2(t) - axis2).norm() - (q2 - axis2).norm())
+                t1a, t1b, lambda t: abs((trochoid_core(t) - axis2).norm() - (q2 - axis2).norm())
             )
         else:
+            # bottom circle
             t1c = t1a
 
         def distance_from_involute(t: float):
-            v = trochoid2(t)
+            """Measure the distance from the involute curve at the same gamma value"""
+            v = trochoid_core(t)
             gamma = acos(v.dot(axis2))
             u = trans(gamma2epsilon(gamma, gamma_b2), q2, axis2, gamma_b2)
             return (u - v).norm()
@@ -138,12 +143,13 @@ def gear_bevel(
         # find the point on the involute curve that is closest to the trochoid curve
         t1d = minimize(t1c, t1b, distance_from_involute)
 
+        # use the part from bottom circle (t1a) to cross point with involute (t1d)
         c1.clear()
         for i in range(0, n + 1):
             t = t1a + ((t1d - t1a) * i) / n
-            c1.append(trochoid2(t))
+            c1.append(trochoid_core(t))
 
-        gamma = acos(c1[-1].dot(axis2))
+        gamma = acos(c1[-1].dot(axis2))  # for cross point with involute curve
         return (c1, gamma)
 
     def apply_backlash(curve: list[Vector], axis: Vector, z: float):
@@ -154,7 +160,10 @@ def gear_bevel(
                 .dot((Vector(1, 0, 0) - axis.normalize(Vector(1, 0, 0).dot(axis))).normalize())
             )
 
+        # scale by r0 and apply backlash
         curve = [rotate(r0 * p, axis, backlash / (m * z / 2)) for p in curve]
+
+        # if tip or bottom are overlapped, remove the part
         if angle(curve[0]) > pi / z / 2:
             while angle(curve[0]) > pi / z / 2:
                 curve.pop(0)
@@ -167,11 +176,12 @@ def gear_bevel(
         axis: Vector,
         p1: Vector,
         p2: Vector,
-        great_circle=False,
+        great_arc=False,
         n=6,
     ):
+        """Generate an arc between two points on a sphere."""
         c: list[Vector] = []
-        if great_circle:
+        if great_arc:
             v1 = p1
             v2 = p2
             t = acos(v1.dot(v2) / (v1.norm() * v2.norm()))
@@ -189,6 +199,8 @@ def gear_bevel(
         return c
 
     def gear_curves():
+        """Generate the involute and trochoid curves for the two gears."""
+
         # base point on the base circle
         q1 = rotate(
             Vector(cos(gamma_p1 - gamma_b1), 0, sin(gamma_p1 - gamma_b1)),
@@ -221,8 +233,6 @@ def gear_bevel(
 
         return trochoid1, involute1, trochoid2, involute2
 
-    trochoid1, involute1, trochoid2, involute2 = gear_curves()
-
     def tooth_profile(trochoid: list[Vector], involute: list[Vector], axis: Vector, z: float):
         trochoid1 = apply_backlash(trochoid, axis, z)
         involute1 = apply_backlash(involute, axis, z)
@@ -240,6 +250,8 @@ def gear_bevel(
         ]
 
     def connect_by_splines(sketch: adsk.fusion.Sketch, curves: list[Iterable[Vector]]):
+        """Generate splines and connect them with each other to make a closed loop."""
+
         result: list[adsk.fusion.SketchFittedSpline] = []
         for i, curve in enumerate(curves):
             points = [fh.point3d(p) for p in curve]
@@ -255,6 +267,7 @@ def gear_bevel(
     def line(
         sketch: adsk.fusion.Sketch, p1: Vector | adsk.core.Point3D, p2: Vector | adsk.core.Point3D
     ):
+        """Add a line by two points, accepting both Vector and Point3D types."""
         if isinstance(p1, Vector):
             p1 = fh.point3d(p1)
         if isinstance(p2, Vector):
@@ -273,13 +286,19 @@ def gear_bevel(
     ):
         comp = occurrence.component
 
+        # generate a patch with the tooth groove shape
         sketch1 = comp.sketches.add(comp.xYConstructionPlane)
         sketch1.isComputeDeferred = True
         connect_by_splines(sketch1, tooth_profile(trochoid, involute, axis, z))
         patch = fh.comp_patch(comp, sketch1.sketchCurves[0], fh.FeatureOperations.new_body)
+        for c in sketch1.sketchCurves:
+            c.isFixed = True
+        for p in sketch1.sketchPoints:
+            p.isFixed = True
         sketch1.isVisible = False
         sketch1.isComputeDeferred = False
 
+        # generate the base body of the gear
         sketch2 = comp.sketches.add(comp.xYConstructionPlane)
         sketch2.isComputeDeferred = True
         va = Vector(r0, 0, -mk * m * flip)
@@ -295,6 +314,10 @@ def gear_bevel(
         lc = line(sketch2, la.endSketchPoint, vax1)
         ld = line(sketch2, lb.endSketchPoint, vax2)
         le = line(sketch2, lc.endSketchPoint, ld.endSketchPoint)
+        for c in sketch2.sketchCurves:
+            c.isFixed = True
+        for p in sketch2.sketchPoints:
+            p.isFixed = True
         sketch2.isComputeDeferred = False
 
         body = fh.comp_revolve(comp, sketch2.profiles[0], le, fh.FeatureOperations.new_body)
@@ -303,26 +326,30 @@ def gear_bevel(
         adsk.doEvents()
         adsk.core.Application.get().activeViewport.refresh()
 
-        # determine the sweep range
+        def helical_angle(scale: float):
+            return flip * 2 * r * tan(beta) / z * log(scale)
+
+        # determine the lofting range of the tooth groove shape
         scale_start = 1.02
         scale_end = (r0 - width) / r0 * 0.98
-        scale_n = 1 if beta == 0 else max(5, ceil(-2 * r * tan(beta) / z * log(scale_end)/pi*20))
+        scale_n = 1 if beta == 0 else max(5, ceil(abs(helical_angle(scale_end)) / pi * 20))
 
-        # create the tooth patches for sweeping
+        # create the tooth patches for lofting by scaling and rotating the original patch
         patches: list[adsk.fusion.BRepBody] = []
         for i in range(scale_n + 1):
             scale = scale_start * (scale_end / scale_start) ** (i / scale_n)
             copy = fh.comp_copy(comp, patch.bodies[0])
-            fh.comp_scale(comp, list(copy.bodies), comp.originConstructionPoint, scale)
+            fh.comp_scale(comp, copy.bodies[0], comp.originConstructionPoint, scale)
             if (scale - 1) * tan(beta) != 0:
-                inp = comp.features.moveFeatures.createInput2(fh.collection(copy.bodies[0]))
-                inp.defineAsRotate(
+                fh.comp_move_rotate(
+                    comp,
+                    copy.bodies[0],
                     le.createForAssemblyContext(occurrence),
-                    fh.value_input(flip * 2 * r * tan(beta) / z * log(scale)),
+                    helical_angle(scale),
                 )
-                comp.features.moveFeatures.add(inp)
             patches.append(copy.bodies[0])
 
+        # loft the patches to create the tooth shape and circular pattern it
         tooth = fh.comp_loft(
             comp, fh.FeatureOperations.cut, [p.faces[0] for p in patches], [body.bodies[0]]
         )
@@ -332,7 +359,11 @@ def gear_bevel(
         # refresh the viewport
         adsk.doEvents()
         adsk.core.Application.get().activeViewport.refresh()
+
+        # return the axis of the gear for joint creation
         return vax0, vax1
+
+    trochoid1, involute1, trochoid2, involute2 = gear_curves()
 
     app = adsk.core.Application.get()
     design = adsk.fusion.Design.cast(app.activeProduct)
@@ -351,27 +382,32 @@ def gear_bevel(
     # generate the first gear
     gear1_occurrence = comp.occurrences.addNewComponent(adsk.core.Matrix3D.create())
     gear1_occurrence.isGroundToParent = False
+    gear1_occurrence = gear1_occurrence.createForAssemblyContext(comp_occurrence)
     gear1 = gear1_occurrence.component
     gear1.name = f"bevel{format(round(m*10,2),"g")}M{z1}T{format(round(sigma/pi*180,2), "g")}deg"
-    axis1p = generate_gear(gear1_occurrence.createForAssemblyContext(comp_occurrence), axis1, z1, trochoid1, involute1, 1)
+    axis1p = generate_gear(gear1_occurrence, axis1, z1, trochoid1, involute1, 1)
 
     # generate the second gear
     gear2_occurrence = comp.occurrences.addNewComponent(adsk.core.Matrix3D.create())
+    gear2_occurrence = gear2_occurrence.createForAssemblyContext(comp_occurrence)
     gear2 = gear2_occurrence.component
     gear2.name = f"bevel{format(round(m*10,2),"g")}M{z2}T{format(round(sigma/pi*180,2), "g")}deg"
-    axis2p = generate_gear(gear2_occurrence.createForAssemblyContext(comp_occurrence), axis2, z2, trochoid2, involute2, -1)
+    axis2p = generate_gear(gear2_occurrence, axis2, z2, trochoid2, involute2, -1)
 
+    # draw the sphere on xz plane to check the size and position of gears
     sketch0 = comp.sketches.add(comp.xZConstructionPlane)
     circ0 = sketch0.sketchCurves.sketchCircles.addByCenterRadius(fh.point3d(), r0)
     circ0.isConstruction = True
     circ0.isFixed = True
     sketch0.isVisible = False
 
-    # draw the axis of the first gear for joint creation
+    # draw the axes of the two gears for joint creation
     sketch1 = comp.sketches.add(comp.xYConstructionPlane)
     axis1l = line(sketch1, axis1p[0], axis1p[1])
     axis2l = line(sketch1, axis2p[0], axis2p[1])
 
+    # draw the reference circle for the 1st gear
+    # it is used to create the joint between the gear and the wrapper component
     inp = comp.constructionPlanes.createInput(comp_occurrence)
     inp.setByDistanceOnPath(axis1l, fh.value_input(0))
     plane1 = comp.constructionPlanes.add(inp)
@@ -380,6 +416,16 @@ def gear_bevel(
     circ1.isFixed = True
     sketch2.isVisible = False
 
+    fh.comp_built_joint_revolute(
+        comp,
+        gear1_occurrence,
+        comp_occurrence,
+        sketch2.profiles[0], # the circle
+        cast(adsk.fusion.JointDirections, adsk.fusion.JointDirections.ZAxisJointDirection),
+    )
+
+    # draw the reference circle for the 2nd gear
+    # it is used to create the joint between the gear and the wrapper component
     inp = comp.constructionPlanes.createInput(comp_occurrence)
     inp.setByDistanceOnPath(axis2l, fh.value_input(0))
     plane2 = comp.constructionPlanes.add(inp)
@@ -390,17 +436,9 @@ def gear_bevel(
 
     fh.comp_built_joint_revolute(
         comp,
-        comp_occurrence.childOccurrences[0],
+        gear2_occurrence,
         comp_occurrence,
-        sketch2.profiles[0],
-        cast(adsk.fusion.JointDirections, adsk.fusion.JointDirections.ZAxisJointDirection),
-    )
-
-    fh.comp_built_joint_revolute(
-        comp,
-        comp_occurrence.childOccurrences[1],
-        comp_occurrence,
-        sketch3.profiles[0],
+        sketch3.profiles[0], # the circle
         cast(adsk.fusion.JointDirections, adsk.fusion.JointDirections.ZAxisJointDirection),
     )
 
