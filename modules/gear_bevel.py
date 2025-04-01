@@ -29,7 +29,7 @@ def gear_bevel(
         dedendum,
     )
 
-    # calculate transverse values for helical gears
+    # calculate transverse values for spiral gears
     m *= 1 / cos(beta)
     mf *= cos(beta)
     mk *= cos(beta)
@@ -326,13 +326,13 @@ def gear_bevel(
         adsk.doEvents()
         adsk.core.Application.get().activeViewport.refresh()
 
-        def helical_angle(scale: float):
+        def spiral_angle(scale: float):
             return flip * 2 * r * tan(beta) / z * log(scale)
 
         # determine the lofting range of the tooth groove shape
         scale_start = 1.02
         scale_end = (r0 - width) / r0 * 0.98
-        scale_n = 1 if beta == 0 else max(5, ceil(abs(helical_angle(scale_end)) / pi * 20))
+        scale_n = 1 if beta == 0 else max(5, ceil(abs(spiral_angle(scale_end)) / pi * 20))
 
         # create the tooth patches for lofting by scaling and rotating the original patch
         patches: list[adsk.fusion.BRepBody] = []
@@ -345,7 +345,7 @@ def gear_bevel(
                     comp,
                     copy.bodies[0],
                     le.createForAssemblyContext(occurrence),
-                    helical_angle(scale),
+                    spiral_angle(scale),
                 )
             patches.append(copy.bodies[0])
 
