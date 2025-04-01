@@ -19,7 +19,7 @@
   * 内歯車（はすばも可能）
   * ラック（はすばも可能）
   * ウォームギアとウォームホイール
-  * かさば歯車（はすばも可能）
+  * かさば歯車（まがり歯も可能）
   * らせん状の曲線（カムやスプリングの作成に使用）
 
 * 豊富なカスタマイズ項目
@@ -30,12 +30,13 @@
   * フィレット径
   * 歯先の延長（ホブ加工用）
 
-また、このスクリプトは歯元のフィレット部分は通常の歯車の切削工程で生まれるトロコイド曲線を正しく再現します。それに伴い、小歯数の歯車で生じる切り下げも正しく反映します。標準の Spur Gear スクリプトはこれに対応していません。
-
-下図は青がこのスクリプトで、黄緑が標準の Spur Gear スクリプトで生成した歯形です。標準の Spur Gear スクリプトで生成した歯車は大歯数歯車との組み合わせでは干渉を生じるため正しく回転しません。
-
-<a href="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/fillet1.png"><img src="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/fillet1.png" width="200"/></a>
-<a href="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/fillet2.png"><img src="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/fillet2.png" width="200"/></a>
+* 正確な歯形
+  * 円柱形状歯車（平歯車、はすば歯車、内歯車）に対して、このスクリプトが生成する歯元のフィレット部分は通常の歯車の切削工程で生まれるトロコイド曲線を正しく再現します。それに伴い、小歯数の歯車で生じる切り下げも正しく反映します。標準の Spur Gear スクリプトはこれに対応していません。<br>
+  下図は青がこのスクリプトで、黄緑が標準の Spur Gear スクリプトで生成した歯形です。標準の Spur Gear スクリプトで生成した歯車は大歯数歯車との組み合わせでは干渉を生じるため正しく回転しません。<br>
+  <a href="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/fillet1.png"><img src="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/fillet1.png" width="200"/></a>
+  <a href="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/fillet2.png"><img src="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/fillet2.png" width="200"/></a>
+  * ウォームホイールに対しては、このスクリプトは内部で実際にディスク状の部材をウォームギア状の切削具により切削し、歯車を成形する過程をシミュレーションすることにより、正しいウォームホイール形状を求めています。
+  * かさば歯車に対しては、このスクリプトは平歯車の歯形を流用するのではなく、球面インボリュート曲線を用いた正確な歯形を生成します。また歯元には球面トロコイド曲線による自然なフィレットと必要十分な切り下げも実現します。
 
 # 作者
 
@@ -53,9 +54,9 @@ MIT
 
 # サブモジュール
 
-- /docs : https://github.com/osamutake/fusion360-study-gears-docs
-- /calc : https://github.com/osamutake/fusion360-study-gears-calc
-- /modules/lib/fusion_helper : https://github.com/osamutake/fusion360-helper
+- ドキュメント /docs : https://github.com/osamutake/fusion360-study-gears-docs
+- 計算機 /calc : https://github.com/osamutake/fusion360-study-gears-calc
+- 汎用ライブラリ /modules/lib/fusion_helper : https://github.com/osamutake/fusion360-helper
 
 # ダウンロードとインストール
 
@@ -118,7 +119,7 @@ MIT
 
 `Bevel` タブで、任意の軸角度を持つベベルギアを生成できます。はすばにすることも可能です。
 
-<img src="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/bevel.gif" width="150"/><img src="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/bevel2.gif" width="150"/>
+<img src="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/bevel.gif" height="100"/><img src="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/bevel2.gif" height="100"/><img src="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/bevel6.gif" height="100">
 
 ## Spiral タブ
 
@@ -136,6 +137,7 @@ MIT
 - [内歯車](https://github.com/osamutake/fusion360-study-gears-docs/blob/master/internal-ja.md)
 - [ラック＆ピニオン](https://github.com/osamutake/fusion360-study-gears-docs/blob/master/rack-ja.md)
 - [ウォーム＆ウォームホイール](https://github.com/osamutake/fusion360-study-gears-docs/blob/master/worm_and_wheel-ja.md)
+- [かさば歯車](https://github.com/osamutake/fusion360-study-gears-docs/blob/master/bevel-ja.md)
 
 <a href="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/basics-ja.md">
 <img title="歯車の基礎知識" src="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/module.png" height="100"/>
@@ -160,4 +162,7 @@ MIT
 </a>
 <a href="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/worm_and_wheel-ja.md">
 <img title="ウォーム＆ホイール" src="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/worm+wheel.gif" height="100"/>
+</a>
+<a href="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/bevel-ja.md">
+<img title="かさば歯車" src="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/bevel2.gif" height="100"/>
 </a>
