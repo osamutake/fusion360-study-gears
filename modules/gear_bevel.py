@@ -1,4 +1,4 @@
-from math import asin, acos, atan, tan, sin, cos, pi, atan2, sqrt
+from math import asin, acos, atan, tan, sin, cos, pi, atan2, sqrt, ceil, log
 from collections.abc import Iterable
 from typing import Literal, cast
 
@@ -28,6 +28,12 @@ def gear_bevel(
         addendum,
         dedendum,
     )
+
+    # adjustment for helical gears
+    m *= 1 / cos(beta)
+    mf *= cos(beta)
+    mk *= cos(beta)
+    alpha = atan(tan(alpha) / cos(beta))
 
     gamma_p1 = atan2(sin(sigma), z2 / z1 + cos(sigma))
     r = z1 / (2 * sin(gamma_p1))
@@ -206,12 +212,12 @@ def gear_bevel(
         trochoid1, gamma1 = spherical_trochoid(
             t2, q1, axis2, axis1, z2, z1, involute1, gamma_b1, gamma_f1
         )
-        involute1 = spherical_involute(axis1, q1, gamma_b1, gamma1, gamma_k1 + rm * 0.1)
+        involute1 = spherical_involute(axis1, q1, gamma_b1, gamma1, gamma_k1 + rm * 0.2)
 
         trochoid2, gamma2 = spherical_trochoid(
             t1, q2, axis1, axis2, z1, z2, involute2, gamma_b2, gamma_f2
         )
-        involute2 = spherical_involute(axis2, q2, gamma_b2, gamma2, gamma_k2 + rm * 0.1)
+        involute2 = spherical_involute(axis2, q2, gamma_b2, gamma2, gamma_k2 + rm * 0.2)
 
         return trochoid1, involute1, trochoid2, involute2
 
@@ -258,13 +264,15 @@ def gear_bevel(
         )
 
     def generate_gear(
-        comp: adsk.fusion.Component,
+        occurrence: adsk.fusion.Occurrence,
         axis: Vector,
         z: int,
         trochoid: list[Vector],
         involute: list[Vector],
         flip: Literal[1, -1],
     ):
+        comp = occurrence.component
+
         sketch1 = comp.sketches.add(comp.xYConstructionPlane)
         sketch1.isComputeDeferred = True
         connect_by_splines(sketch1, tooth_profile(trochoid, involute, axis, z))
@@ -295,16 +303,30 @@ def gear_bevel(
         adsk.doEvents()
         adsk.core.Application.get().activeViewport.refresh()
 
-        patch1 = fh.comp_copy(comp, patch.bodies[0])
-        patch1 = fh.comp_scale(comp, patch1.bodies[0], comp.originConstructionPoint, 1.1)
-        patch2 = fh.comp_copy(comp, patch.bodies[0])
-        patch2 = fh.comp_scale(
-            comp, patch2.bodies[0], comp.originConstructionPoint, (r0 - width) / r0 * 0.9
-        )
+        # determine the sweep range
+        scale_start = 1.02
+        scale_end = (r0 - width) / r0 * 0.98
+        scale_n = 1 if beta == 0 else max(5, ceil(-2 * r * tan(beta) / z * log(scale_end)/pi*20))
+
+        # create the tooth patches for sweeping
+        patches: list[adsk.fusion.BRepBody] = []
+        for i in range(scale_n + 1):
+            scale = scale_start * (scale_end / scale_start) ** (i / scale_n)
+            copy = fh.comp_copy(comp, patch.bodies[0])
+            fh.comp_scale(comp, list(copy.bodies), comp.originConstructionPoint, scale)
+            if (scale - 1) * tan(beta) != 0:
+                inp = comp.features.moveFeatures.createInput2(fh.collection(copy.bodies[0]))
+                inp.defineAsRotate(
+                    le.createForAssemblyContext(occurrence),
+                    fh.value_input(flip * 2 * r * tan(beta) / z * log(scale)),
+                )
+                comp.features.moveFeatures.add(inp)
+            patches.append(copy.bodies[0])
+
         tooth = fh.comp_loft(
-            comp, fh.FeatureOperations.cut, [patch1.faces[0], patch2.faces[0]], [body.bodies[0]]
+            comp, fh.FeatureOperations.cut, [p.faces[0] for p in patches], [body.bodies[0]]
         )
-        fh.comp_remove(comp, [patch.bodies[0], patch1.bodies[0], patch2.bodies[0]])
+        fh.comp_remove(comp, patches + [patch.bodies[0]])
         fh.comp_circular_pattern(comp, tooth, le, z)
 
         # refresh the viewport
@@ -331,13 +353,13 @@ def gear_bevel(
     gear1_occurrence.isGroundToParent = False
     gear1 = gear1_occurrence.component
     gear1.name = f"bevel{format(round(m*10,2),"g")}M{z1}T{format(round(sigma/pi*180,2), "g")}deg"
-    axis1p = generate_gear(gear1, axis1, z1, trochoid1, involute1, 1)
+    axis1p = generate_gear(gear1_occurrence.createForAssemblyContext(comp_occurrence), axis1, z1, trochoid1, involute1, 1)
 
     # generate the second gear
     gear2_occurrence = comp.occurrences.addNewComponent(adsk.core.Matrix3D.create())
     gear2 = gear2_occurrence.component
     gear2.name = f"bevel{format(round(m*10,2),"g")}M{z2}T{format(round(sigma/pi*180,2), "g")}deg"
-    axis2p = generate_gear(gear2, axis2, z2, trochoid2, involute2, -1)
+    axis2p = generate_gear(gear2_occurrence.createForAssemblyContext(comp_occurrence), axis2, z2, trochoid2, involute2, -1)
 
     sketch0 = comp.sketches.add(comp.xZConstructionPlane)
     circ0 = sketch0.sketchCurves.sketchCircles.addByCenterRadius(fh.point3d(), r0)
