@@ -1,12 +1,12 @@
 from collections.abc import Callable
 from copy import copy
-from math import atan, cos, sin, tan, pi, ceil, trunc
+from math import atan, cos, tan, pi, ceil, trunc
 import adsk.core, adsk.fusion
 
 from . import gear_curve
 from .lib import fusion_helper as fh
-from .lib.fusion_helper import Vector, vec
-from .lib.curve import Curve
+from .lib.fusion_helper import Vector
+
 
 def gear_cylindrical(
     parent: adsk.fusion.Component,
@@ -25,14 +25,6 @@ def gear_cylindrical(
     sketch = comp.sketches.add(comp.xYConstructionPlane)
     sketch.isComputeDeferred = True
 
-    # delta は回転角
-    def point3d(pnt: Vector, delta=0.0, flip_y=False):
-        (r, t) = pnt.to_polar()
-        if flip_y:
-            return fh.point3d(r * cos(t - delta), r * sin(t - delta + pi))
-        else:
-            return fh.point3d(r * cos(t + delta), r * sin(t + delta))
-
     # はすば補正を施した上で歯形を生成 involute & [fillet]
     # https://www.khkgears.co.jp/gear_technology/basic_guide/KHK365.html
     cos_beta = cos(beta)
@@ -44,124 +36,47 @@ def gear_cylindrical(
     params_adjusted.alpha = atan(tan(params.alpha) / cos_beta)
     params_adjusted.shift *= cos_beta
     params_adjusted.backlash *= -1 if params.inner else 1
-    curves = gear_curve.gear_curve(params_adjusted)
+    curves = gear_curve.gear_curve(params_adjusted, tip_fillet * cos_beta)
     # curves: [(curve, tangent1, tangent2), ...]
 
-    # 歯先円
+    # 歯先の点 (tip_fillet の分だけ延長済み)
+    if isinstance(curves[0][0], Vector):
+        pt = curves[0][0] + Vector.polar(curves[0][3], curves[0][1])
+    else:
+        pt = curves[0][0](curves[0][1])
+
+    # 歯先円 (tip_fillet の分だけ延長済み)
     tip_circle = sketch.sketchCurves.sketchCircles.addByCenterRadius(
         fh.point3d(),
-        point3d(curves[0][0][0]).distanceTo(fh.point3d()),
+        pt.norm(),
     )
     tip_circle.isFixed = True
 
     # 歯の切り取り部分を描く
-    lines1 = draw_part(sketch, curves, point3d, pi / z)
-    sketch.geometricConstraints.addCoincident(lines1[0].startSketchPoint, tip_circle)
-    lines2 = draw_part(sketch, curves, point3d, -pi / z, flip_y=True)
-    sketch.geometricConstraints.addCoincident(lines2[-1].endSketchPoint, tip_circle)
+    lines1 = draw_part(sketch, curves, pi / z)
+    sketch.geometricConstraints.addCoincident(lines1[0][1], tip_circle)
+    lines2 = draw_part(sketch, curves, -pi / z, flip_y=True)
+    sketch.geometricConstraints.addCoincident(lines2[-1][2], tip_circle)
     for curve in sketch.sketchCurves:
         curve.isFixed = True
 
-    if tip_fillet > 0:
-        # 歯先の開始点
-        p1 = Vector(lines1[0].startSketchPoint.geometry)
-        # 歯の中心点＆中心線
-        p2 = Vector.polar(p1.norm() + tip_fillet * m, pi / z)
-        p3 = p1.rotate(-pi / z).flip_y().rotate(pi / z)
-        tip_center_line = sketch.sketchCurves.sketchLines.addByTwoPoints(
-            fh.point3d(),
-            fh.point3d(p2),
-        )
-        tip_center_line.isConstruction = True
-        tip_center_line.isFixed = True
-        # フィレットの先端円
-        tip_fillet_circle = sketch.sketchCurves.sketchCircles.addByCenterRadius(
-            fh.point3d(),
-            p1.norm() + tip_fillet * m,
-        )
-        tip_circle.isConstruction = True
-        sketch.geometricConstraints.addCoincident(
-            tip_fillet_circle.centerSketchPoint, sketch.originPoint
-        )
-        # フィレットの円弧
-        tip_fillet_arc = sketch.sketchCurves.sketchArcs.addByThreePoints(
-            lines1[0].startSketchPoint,
-            fh.point3d(p2),
-            fh.point3d(p3),
-        )
-        # インボリュート曲線に接する
-        sketch.geometricConstraints.addTangent(tip_fillet_arc, lines1[0])
-        # 中心線上に中心を置き、外周円に接し、歯先円まで
-        cons1 = sketch.geometricConstraints.addCoincident(
-            tip_fillet_arc.centerSketchPoint, tip_center_line
-        )
-        cons2 = sketch.geometricConstraints.addTangent(tip_fillet_arc, tip_fillet_circle)
-        cons3 = sketch.geometricConstraints.addCoincident(
-            tip_fillet_arc.endSketchPoint, tip_circle
-        )
-
-        # それだと大きすぎるときは２つに分割する
-        if tip_fillet_circle.radius > tip_circle.radius + tip_fillet * m:
-            # 条件を削除
-            cons1.deleteMe()
-            cons2.deleteMe()
-            cons3.deleteMe()
-            # 外周円の大きさを先に決めて
-            tip_fillet_circle.radius = tip_circle.radius + tip_fillet * m
-            sketch.sketchDimensions.addRadialDimension(
-                tip_fillet_circle, fh.point3d(tip_fillet_circle.radius, tip_fillet_circle.radius)
-            )
-            # 外周円で接するところで終端
-            sketch.geometricConstraints.addTangent(tip_fillet_arc, tip_fillet_circle)
-            sketch.geometricConstraints.addCoincident(
-                tip_fillet_arc.endSketchPoint, tip_fillet_circle
-            )
-            # 反対側は別の円弧を用意して対称に配置する
-            tip_fillet_arc2 = sketch.sketchCurves.sketchArcs.addByCenterStartEnd(
-                tip_fillet_arc.centerSketchPoint.geometry,
-                tip_fillet_arc.startSketchPoint.geometry,
-                tip_fillet_arc.endSketchPoint.geometry,
-            )
-            sketch.geometricConstraints.addSymmetry(
-                tip_fillet_arc.startSketchPoint, tip_fillet_arc2.endSketchPoint, tip_center_line
-            )
-            sketch.geometricConstraints.addSymmetry(
-                tip_fillet_arc.endSketchPoint, tip_fillet_arc2.startSketchPoint, tip_center_line
-            )
-            sketch.geometricConstraints.addSymmetry(
-                tip_fillet_arc.centerSketchPoint,
-                tip_fillet_arc2.centerSketchPoint,
-                tip_center_line,
-            )
-        else:
-            tip_fillet_arc2 = None
-
     # 歯底部分を描く
-    if lines1[-1].endSketchPoint.geometry.y != lines2[0].startSketchPoint.geometry.y:
+    if lines1[-1][2].geometry.y != lines2[0][1].geometry.y:
         sketch.sketchCurves.sketchArcs.addByCenterStartEnd(
             fh.point3d(),
-            lines2[0].startSketchPoint,
-            lines1[-1].endSketchPoint,
+            lines2[0][1],
+            lines1[-1][2],
         ).isFixed = True
+
     # 歯先を飛び出させる
-    if tip_fillet == 0:
-        l1 = sketch.sketchCurves.sketchLines.addByTwoPoints(
-            lines1[0].startSketchPoint,
-            point3d(curves[0][0][0] + vec(m, 0), pi / z),
-        )
-    else:
-        l1 = sketch.sketchCurves.sketchLines.addByTwoPoints(
-            (
-                tip_fillet_arc.endSketchPoint
-                if not tip_fillet_arc2
-                else tip_fillet_arc2.endSketchPoint
-            ),
-            point3d(p3.normalize(p1.norm() + m)),
-        )
+    l1 = sketch.sketchCurves.sketchLines.addByTwoPoints(
+        lines1[0][1],
+        fh.point3d(Vector(lines1[0][1].geometry) * 1.01),
+    )
     l1.isFixed = True
     l2 = sketch.sketchCurves.sketchLines.addByTwoPoints(
-        lines2[-1].endSketchPoint,
-        point3d(curves[0][0][0] + vec(m, 0), -pi / z, flip_y=True),
+        lines2[-1][2],
+        fh.point3d(Vector(lines2[-1][2].geometry) * 1.01),
     )
     l2.isFixed = True
     sketch.sketchCurves.sketchArcs.addByCenterStartEnd(
@@ -197,7 +112,7 @@ def gear_cylindrical(
         sketch.profiles,
         key=lambda p: p.areaProperties().centroid.x,
         reverse=True,
-    )[0 : 2 if tip_fillet == 0 else 3]
+    )[0 : 2]
     if beta == 0:
         # 直歯を押し出して切り取る
         cut = fh.FeatureOperations.cut
@@ -274,41 +189,87 @@ def gear_cylindrical(
 
 def draw_part(
     sketch: adsk.fusion.Sketch,
-    curves: list[tuple[Curve, Vector, Vector]],
-    point3d: Callable[[Vector, float, bool], adsk.core.Point3D],
-    delta=0,
-    last=None,
+    curves: list[tuple[Callable[[float], Vector] | Vector, float, float, int | float]],
+    rot: float,
+    last: adsk.fusion.SketchPoint | None = None,
     flip_y=False,
 ):
-    result: list[adsk.fusion.SketchFittedSpline] = []
-    for c in reversed(curves) if flip_y else curves:
-        # c = (curve, tangent1, tangent2)
-        c0 = list(reversed(c[0]) if flip_y else c[0])
-        if last is None:
-            last = point3d(c0[0], delta, flip_y)
-        spline = sketch.sketchCurves.sketchFittedSplines.add(
-            fh.collection([last] + [point3d(pp, delta, flip_y) for pp in c0[1:]])
-        )
-        result.append(spline)
-        last = spline.endSketchPoint
-
-        # flip されていたら接線ベクトルを入れ替える
+    def point3d(v: Vector):
         if not flip_y:
-            c1, c2 = c[1:3]
+            return fh.point3d(v.rotate(rot))
         else:
-            c2, c1 = c[1:3]
+            return fh.point3d(v.flip_y().rotate(rot))
 
-        # 接線制約を追加
-        line = sketch.sketchCurves.sketchLines.addByTwoPoints(
-            spline.startSketchPoint, point3d(c0[0] + c1, delta, flip_y)
-        )
-        line.isConstruction = True
-        line.isFixed = True
-        sketch.geometricConstraints.addTangent(spline, line)
-        line = sketch.sketchCurves.sketchLines.addByTwoPoints(
-            spline.endSketchPoint, point3d(c0[-1] + c2, delta, flip_y)
-        )
-        line.isConstruction = True
-        line.isFixed = True
-        sketch.geometricConstraints.addTangent(spline, line)
+    result: list[
+        tuple[
+            adsk.fusion.SketchArc | adsk.fusion.SketchFittedSpline,
+            adsk.fusion.SketchPoint,
+            adsk.fusion.SketchPoint,
+        ]
+    ] = []
+    for c in reversed(curves) if flip_y else curves:
+        if not flip_y:
+            s = c[1]
+            e = c[2]
+        else:
+            s = c[2]
+            e = c[1]
+        if isinstance(c[0], Vector):
+            # (center, start, end, radius)
+            arc = sketch.sketchCurves.sketchArcs.addByCenterStartSweep(
+                point3d(c[0]),
+                point3d(c[0] + Vector.polar(c[3], s)) if last is None else last,
+                e - s if not flip_y else s - e,
+            )
+            if (e - s if not flip_y else s - e) > 0:
+                result.append((arc, arc.startSketchPoint, arc.endSketchPoint))
+            else:
+                result.append((arc, arc.endSketchPoint, arc.startSketchPoint))
+        else:
+            # c = (func, ts, te, n_points)
+
+            def curve(func: Callable[[float], Vector], s: float, e: float, n: int):
+                points = [func(s + (e - s) * i / (n * 30 - 1)) for i in range(n * 30)]
+                length = [0]
+                for i in range(1, len(points)):
+                    length.append(length[-1] + (points[i] - points[i - 1]).norm())
+                result = [points[0]]
+                j = 0
+                for i in range(1, n):
+                    l = length[-1] * (i / (n - 1))
+                    while length[j] < l:
+                        j += 1
+                    result.append(points[j])
+                return result
+
+            points = curve(c[0], s, e, int(c[3]))
+
+            points3d = [point3d(p) for p in points]
+            if last is not None:
+                points3d[0] = last
+            spline = sketch.sketchCurves.sketchFittedSplines.add(fh.collection(points3d))
+
+            # 接線制約を追加
+            delta = (e - s) / c[3] / 1000
+
+            pss = points[0] + (c[0](s + delta) - points[0]) * 500
+            line = sketch.sketchCurves.sketchLines.addByTwoPoints(
+                spline.startSketchPoint, point3d(pss)
+            )
+            line.isConstruction = True
+            line.isFixed = True
+            sketch.geometricConstraints.addTangent(spline, line)
+
+            pee = points[-1] + (c[0](e - delta) - points[-1]) * 500
+            line = sketch.sketchCurves.sketchLines.addByTwoPoints(
+                spline.endSketchPoint, point3d(pee)
+            )
+            line.isConstruction = True
+            line.isFixed = True
+            sketch.geometricConstraints.addTangent(spline, line)
+
+            result.append((spline, spline.startSketchPoint, spline.endSketchPoint))
+
+        last = result[-1][2]
+
     return result

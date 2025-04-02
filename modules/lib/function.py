@@ -17,18 +17,24 @@ def minimize(l: float, r: float, f: Callable[[float], float], tol=1e-6) -> float
         float: The x-value that minimizes the function.
     """
     phi = (1 + 5**0.5) / 2
-    a = l
-    b = r
-    c = b - (b - a) / phi
-    d = a + (b - a) / phi
-    while abs(c - d) > tol:
-        if f(c) < f(d):
-            b = d
+    m1 = r - (r - l) / phi
+    m2 = l + (r - l) / phi
+    f1 = f(m1)
+    f2 = f(m2)
+    while abs(l - r) > tol:
+        if f1 < f2:
+            r = m2
+            m2 = m1
+            f2 = f1
+            m1 = r - (r - l) / phi
+            f1 = f(m1)
         else:
-            a = c
-        c = b - (b - a) / phi
-        d = a + (b - a) / phi
-    return (b + a) / 2
+            l = m1
+            m1 = m2
+            f1 = f2
+            m2 = l + (r - l) / phi
+            f2 = f(m2)
+    return (l + r) / 2
 
 
 def find_root(l: float, r: float, f: Callable[[float], float], tol: float = 1e-6) -> float:
@@ -46,15 +52,18 @@ def find_root(l: float, r: float, f: Callable[[float], float], tol: float = 1e-6
     Returns:
         float: The x-value that is a root of the function.
     """
-    a = l
-    b = r
-    fa = f(a)
-    while abs(b - a) > tol:
-        c = (a + b) / 2
-        fc = f(c)
-        if fa * fc < 0:
-            b = c
+    fl = f(l)
+    fr = f(r)
+    if fl * fr > 0:
+        return l if abs(fl) < abs(fr) else r
+
+    if fl > fr:
+        [l, r] = [r, l]
+    while abs(l - r) > tol:
+        m = (l + r) / 2
+        if f(m) < 0:
+            l = m
         else:
-            a = c
-            fa = fc
-    return (b + a) / 2
+            r = m
+
+    return (l + r) / 2

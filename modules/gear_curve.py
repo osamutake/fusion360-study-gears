@@ -29,6 +29,7 @@ class GearParams:
 
 def gear_curve(
     params: GearParams,
+    tip_fillet: float = 0.0,
 ):
     params = copy(params)
     if params.inner:
@@ -83,7 +84,7 @@ def gear_curve(
         return p2 if p2.x - p2.y < p3.x - p3.y else p3
 
     # addendum shape
-    (involute_c, involute_t) = calculate_involute_curve(params, rack_trace)
+    (involute_c, involute_t) = calculate_involute_curve(params, rack_trace, tip_fillet)
 
     fillet_c = Curve(CurveType.SPLINE)
     fillet_t: list[float] = []
@@ -99,33 +100,66 @@ def gear_curve(
 
     # make the tooth center parallel to the x-axis
     rot = -pi / z / 2
-    involute_c.points = [v.rotate(rot) for v in involute_c]
-    fillet_c.points = [v.rotate(rot) for v in fillet_c]
-
-    # 全周の歯形を生成
-    dt = 1 / 1000
-    result = [
-        (
-            involute_c.extract_points(10),
-            (rack_trace(involute_t[0] + dt)[0] - rack_trace(involute_t[0])[0])
-            .rotate(rot)
-            .normalize(0.1),
-            (rack_trace(involute_t[-1] - dt)[0] - rack_trace(involute_t[-1])[0])
-            .rotate(rot)
-            .normalize(0.1),
-        )
-    ]
+    addendum = lambda t: rack_trace(t)[0].rotate(rot)
+    dedendum = lambda t: fillet_trace(t).rotate(rot)
+    result: list[
+        tuple[Callable[[float], Vector], float, float, int] | tuple[Vector, float, float, float]
+    ] = [(addendum, involute_t[0], involute_t[-1], 10)]
     if len(fillet_c) > 1:
         result.append(
             (
-                fillet_c.extract_points(6),
-                (fillet_trace(fillet_t[0] + dt) - fillet_trace(fillet_t[0]))
-                .rotate(rot)
-                .normalize(0.1),
-                Vector.polar(0.1, (fillet_c[-1].angle() + pi / 2)),
+                dedendum,
+                fillet_t[0],
+                fillet_t[-1],  # tangent: Vector.polar(0.1, (fillet_c[-1].angle() + pi / 2))
+                7,
             )
         )
+
+    dt = 1 / 10000
+    pt = involute_c[0].rotate(rot)  # フィレット延長後の歯先
+    if tip_fillet > 0 and pt.y < -dt:
+        mk = params.mk * params.m
+        tf = tip_fillet * params.m
+        shift = params.shift * params.m
+
+        rk = rp + shift + mk  # 歯先円の半径
+        rt = rk + tf  # 延長歯先円の半径
+        tk = find_root(  # 歯先点のパラメータを求める
+            involute_t[0], involute_t[-1], lambda t: addendum(t).norm() - rk
+        )
+        pk = addendum(tk)  # 歯先点
+        n = (addendum(tk + dt) - pk).rotate(pi / 2)  # 歯先点からの法線
+        n = n * (pk.y / n.y)  # 中心線と交わるまで伸ばす
+        c = pk - n  # 両側の歯先で接する円の中心位置
+        r_max = rp + mk + tf + shift - c.norm()  # フィレット半径の最大値
+
+        # 中心軸上で延長歯先円に接する半径 r の円と歯形との距離
+        def distance_from_circle_to_curve(r: float):
+            c = Vector(rt - r, 0)
+            t = minimize(involute_t[0], involute_t[-1], lambda t: (c - addendum(t)).norm())
+            r2 = (c - addendum(t)).norm()
+            return r2 - r
+
+        if distance_from_circle_to_curve(r_max) > 0:
+            # pk からの垂線が中心軸に交わるまでの間でちょうど延長歯先円に接する点を求める
+            r = find_root(0, n.norm(), lambda r: rt - (pk - n.normalize(r)).norm() - r)
+            c = pk - n.normalize(r)  # フィレット中心
+            result[0] = (addendum, tk, involute_t[-1], 10)
+            result.insert(0, arc(r, c.angle(), (pk - c).angle(), c))
+            result.insert(0, arc(rt, 0, c.angle()))
+        else:
+            # 中心軸上で延長歯先円と歯形に接する円を求める
+            r = find_root(0, r_max, distance_from_circle_to_curve)
+            c = Vector(rt - r, 0)
+            t0 = minimize(involute_t[0], involute_t[-1], lambda t: (c - addendum(t)).norm())
+            result[0] = (addendum, t0, involute_t[-1], 10)
+            result.insert(0, arc(r, 0, (addendum(t0) - c).angle(), c))
+
     return result
+
+
+def arc(r: float, st: float, et: float, c=vec(0, 0)):
+    return (c, st, et, r)
 
 
 # ラック形状を求める
@@ -171,6 +205,7 @@ def rack_geometry(
 def calculate_involute_curve(
     params: GearParams,
     rack_trace: Callable[[float], tuple[Vector, float]],
+    tip_fillet: float = 0.0,
 ):
     [alpha, mk, mf, shift, z, m] = params.to_list("alpha", "mk", "mf", "shift", "z", "m")
     rp = (m * z) / 2
@@ -180,7 +215,7 @@ def calculate_involute_curve(
     involute_n = 300
     # 歯先に触れる点
     involute_s = minimize(
-        0, 90 - alpha, lambda t: abs(rack_trace(t)[0].norm() - (rp + m * (shift + mk)))
+        0, 90 - alpha, lambda t: abs(rack_trace(t)[0].norm() - (rp + m * (shift + mk + tip_fillet)))
     )
     # 中心線を超えたら戻す
     if rack_trace(involute_s)[0].angle() > pi / z / 2:
