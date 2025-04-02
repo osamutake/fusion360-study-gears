@@ -7,12 +7,14 @@ import traceback
 
 from .modules import command
 from .modules import gear_bevel
+from .modules import gear_crown
 from .modules import gear_curve
 from .modules import gear_cylindrical
 from .modules import gear_rack
 from .modules import gear_worm_wheel
 from .modules import gear_worm
 from .modules import tab_bevel
+from .modules import tab_crown
 from .modules import tab_cylindrical
 from .modules import tab_rack_worm
 from .modules import tab_spiral
@@ -39,12 +41,14 @@ def run(_context):
 
             importlib.reload(command)
             importlib.reload(gear_bevel)
+            importlib.reload(gear_crown)
             importlib.reload(gear_curve)
             importlib.reload(gear_cylindrical)
             importlib.reload(gear_rack)
             importlib.reload(gear_worm_wheel)
             importlib.reload(gear_worm)
             importlib.reload(tab_bevel)
+            importlib.reload(tab_crown)
             importlib.reload(tab_cylindrical)
             importlib.reload(tab_rack_worm)
             importlib.reload(tab_spiral)
@@ -56,11 +60,12 @@ def run(_context):
         command.Command(
             script_name,
             script_name,
-            dict(manifest["description"]).get(""),
+            str(dict(manifest["description"]).get("")),
             [
                 tab_cylindrical.TabInput,
                 tab_rack_worm.TabInput,
                 tab_bevel.TabInput,
+                tab_crown.TabInput,
                 tab_spiral.TabInput,
             ],
         )

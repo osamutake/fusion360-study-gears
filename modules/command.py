@@ -25,6 +25,9 @@ class Command(fh.TabbedCommand):
         # then add the details group
         cmd = adsk.core.Command.cast(args.command)
 
+        # set minimum width of the dialog to show all tabs
+        cmd.setDialogMinimumSize(300, 200)
+
         self.details_group = cmd.commandInputs.addGroupCommandInput("details", "Details")
         self.details_group.isExpanded = False
         details = self.details_group.children
