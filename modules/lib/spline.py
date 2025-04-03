@@ -3,9 +3,11 @@
 # https://github.com/Juul/akima-interpolator/tree/master
 
 
-def interpolate(xs: list[float], ys: list[float]):
+def interpolate(xs: list[float], ys: list[float], periodic: bool = False):
     if len(xs) != len(ys):
         raise ValueError("xs and ys must have the same length.")
+    if periodic and ys[0] != ys[-1]:
+        raise ValueError("Periodic ys is required.")
 
     xs = xs.copy()  # clone
     ys = ys.copy()  # clone
@@ -25,12 +27,12 @@ def interpolate(xs: list[float], ys: list[float]):
 
         return linear
 
-    slopes = calc_slopes(xs, ys)
+    slopes = calc_slopes(xs, ys, periodic)
     coefs = calc_coefs(xs, ys, slopes)
 
     def spline(x: float):
         i = find_segment(x, xs)
-        i = max(0, min(i, len(coefs)))
+        i = max(0, min(i, len(coefs)-1))
         return polynomial(x - xs[i], coefs[i])
 
     return spline
@@ -56,27 +58,45 @@ def polynomial(x: float, coefs: list[float]):
     return sum(coef * (x**i) for i, coef in enumerate(reversed(coefs)))
 
 
-def calc_slopes(xs: list[float], ys: list[float]) -> list[float]:
+def calc_slopes(xs: list[float], ys: list[float], periodic: bool) -> list[float]:
     n = len(xs)
     dydx = [(ys[i + 1] - ys[i]) / (xs[i + 1] - xs[i]) for i in range(n - 1)]
-    weights = [abs(dydx[i] - dydx[i - 1]) for i in range(1, n - 1)]
-    result = [
-        slope_from_3points(xs, ys, 0, 0, 1, 2),
-        slope_from_3points(xs, ys, 1, 0, 1, 2),
-    ]
-    for i in range(2, n - 2):
-        wp1, wm1 = weights[i], weights[i - 1]
-        if abs(wp1) < float("1e-10") and abs(wm1) < float("1e-10"):
-            dx, dxm1 = xs[i + 1] - xs[i], xs[i] - xs[i - 1]
-            result.append((dx * dydx[i - 1] + dxm1 * dydx[i]) / (dx + dxm1))
-        else:
-            result.append((wp1 * dydx[i - 1] + wm1 * dydx[i]) / (wp1 + wm1))
-    result.extend(
-        [
-            slope_from_3points(xs, ys, n - 2, n - 3, n - 2, n - 1),
-            slope_from_3points(xs, ys, n - 1, n - 3, n - 2, n - 1),
+    if periodic:
+        weights = [abs(dydx[i % (n - 1)] - dydx[i - 1]) for i in range(1, n)]
+        result = []
+        for i in range(n):
+            i0 = i % (n - 1)
+            im1 = (i - 1 + (n-1)) % (n-1)
+            ip1 = (i + 1) % (n-1)
+            wp1, wm1 = weights[ip1], weights[im1]
+            if abs(wp1) < float("1e-10") and abs(wm1) < float("1e-10"):
+                dx, dxm1 = xs[ip1] - xs[i0], xs[i0] - xs[im1]
+                result.append(
+                    (dx * dydx[im1] + dxm1 * dydx[i0]) / (dx + dxm1)
+                )
+            else:
+                result.append(
+                    (wp1 * dydx[im1] + wm1 * dydx[i0]) / (wp1 + wm1)
+                )
+    else:
+        weights = [abs(dydx[i] - dydx[i - 1]) for i in range(1, n - 1)]
+        result = [
+            slope_from_3points(xs, ys, 0, 0, 1, 2),
+            slope_from_3points(xs, ys, 1, 0, 1, 2),
         ]
-    )
+        for i in range(2, n - 2):
+            wp1, wm1 = weights[i], weights[i - 1]
+            if abs(wp1) < float("1e-10") and abs(wm1) < float("1e-10"):
+                dx, dxm1 = xs[i + 1] - xs[i], xs[i] - xs[i - 1]
+                result.append((dx * dydx[i - 1] + dxm1 * dydx[i]) / (dx + dxm1))
+            else:
+                result.append((wp1 * dydx[i - 1] + wm1 * dydx[i]) / (wp1 + wm1))
+        result.extend(
+            [
+                slope_from_3points(xs, ys, n - 2, n - 3, n - 2, n - 1),
+                slope_from_3points(xs, ys, n - 1, n - 3, n - 2, n - 1),
+            ]
+        )
     return result
 
 

@@ -5,6 +5,7 @@ import adsk.core, adsk.fusion
 
 from .lib import fusion_helper as fh
 from . import command
+from .lib import spline
 
 
 class TabInput(fh.TabInput[command.Command]):
@@ -18,6 +19,7 @@ class TabInput(fh.TabInput[command.Command]):
     radii: adsk.core.TextBoxCommandInput
     height: adsk.core.ValueCommandInput
     flip: adsk.core.BoolValueCommandInput
+    spline: adsk.core.BoolValueCommandInput
 
     @override
     def on_created(self, _: adsk.core.CommandCreatedEventArgs, inputs: adsk.core.CommandInputs):
@@ -29,6 +31,7 @@ class TabInput(fh.TabInput[command.Command]):
         )
         self.height = fh.value_control(inputs, "spiral_height", "Height", "mm", "0")
         self.flip = inputs.addBoolValueInput("spiral_flip", "Flip", True, "", False)
+        self.spline = inputs.addBoolValueInput("spiral_spline", "Spline", True, "", False)
 
     @override
     def on_changed(self, args: adsk.core.InputChangedEventArgs | None):
@@ -72,17 +75,25 @@ class TabInput(fh.TabInput[command.Command]):
             if self.flip.value:
                 radii = list(reversed(radii))
 
-            n_min = 30 * angle / (2 * pi)
+            n_min = 36 * angle / (2 * pi)  # 10 度ごと
             if len(radii) < n_min:
                 m = ceil((n_min - 1) / (len(radii) - 1))
                 n = m * (len(radii) - 1) + 1
                 # radii の点間を m 等分して補間する
-                radii = [
-                    radii[i // m] + (radii[i // m + 1] - radii[i // m]) * (i % m) / m
-                    for i in range(n - 1)
-                ] + [radii[-1]]
+                if self.spline.value and len(radii) >= 5:
+                    # スプラインで補間する
+                    periodic = abs(angle - 2 * pi) < 1e-3 and radii[0] == radii[-1]
+                    interpolate = spline.interpolate(
+                        [i * m for i in range(len(radii))], radii, periodic
+                    )
+                    radii = [interpolate(i) for i in range(n)]
+                else:
+                    radii = [
+                        radii[i // m] + (radii[i // m + 1] - radii[i // m]) * (i % m) / m
+                        for i in range(n - 1)
+                    ] + [radii[-1]]
 
-            spline = sketch.sketchCurves.sketchFittedSplines.add(
+            curve = sketch.sketchCurves.sketchFittedSplines.add(
                 fh.collection(
                     fh.point3d_polar(radii[i], i * angle / (n - 1), i * height / (n - 1))
                     for i in range(n)
@@ -91,9 +102,9 @@ class TabInput(fh.TabInput[command.Command]):
 
             if not is_preview:
                 # fix everything
-                for p in spline.fitPoints:
+                for p in curve.fitPoints:
                     p.isFixed = True
-                spline.isFixed = True
+                curve.isFixed = True
 
         finally:
             sketch.isComputeDeferred = False
