@@ -13,6 +13,7 @@ Enjoy!
 <a href="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/rack.gif"><img src="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/rack.gif" width="200"/></a>
 <a href="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/worm+wheel.gif"><img src="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/worm+wheel.gif" width="200"/></a>
 <a href="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/bevel2.gif"><img src="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/bevel2.gif" width="200"/></a>
+<a href="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/crown.gif"><img src="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/crown.gif" width="200"/></a>
 
 ## Features:
 
@@ -23,6 +24,7 @@ Enjoy!
   * Rack (can be helical)
   * Worm gear & Worm wheel
   * Bevel gear (can be spiral)
+  * Crown gear (NO helical)
   * Spiral curve (to create cum and spring)
 
 * Detailed customization of gears
@@ -39,9 +41,9 @@ Enjoy!
   <br>
   <a href="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/fillet1.png"><img src="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/fillet1.png" width="200"/></a>
   <a href="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/fillet2.png"><img src="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/fillet2.png" width="200"/></a>
-  * For worm wheels, this script actually calculates the cutting process of the worm wheel shape from a disk-shaped material using worm gear shaped cutting tool with extended tooth tip with fillets. Except for the small error due to the finite number of steps of calculation and approximation with spline curves, it gives the exact shape of the worm wheel.
+  * For worm wheels and crown gears (= face gears), this script actually calculates the cutting process of the gear shapes from a disk-shaped or donut-shaped materials using worm or pinion gear shaped cutting tool with extended tooth tip with fillets. Except for the small error due to the finite number of steps of calculation and approximation with spline curves, it gives the exact shape of the worm wheels and crown gears.
   * For bevel gears, this script generates tooth shapes based on the exact spherical involute curves. It also generates spherical trochoid curve at the root of the tooth. The generated gear shape is not of approximation. It exactly meshes with each other.
-
+  
 # Author
 
 Osamu Takeuchi <osamu@big.jp>
@@ -141,7 +143,8 @@ Spiral curves and cum shapes can be generated on this tab.
 - [Internal gear](https://github.com/osamutake/fusion360-study-gears-docs/blob/master/internal.md)
 - [Rack and pinion](https://github.com/osamutake/fusion360-study-gears-docs/blob/master/rack.md)
 - [Worm and Worm wheel](https://github.com/osamutake/fusion360-study-gears-docs/blob/master/worm_and_wheel.md)
-- [Bevel](https://github.com/osamutake/fusion360-study-gears-docs/blob/master/bevel.md)
+- [Bevel gear](https://github.com/osamutake/fusion360-study-gears-docs/blob/master/bevel.md)
+- [Crown gear](https://github.com/osamutake/fusion360-study-gears-docs/blob/master/crown.md)
 
 
 <a href="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/basics.md">
@@ -170,4 +173,7 @@ Spiral curves and cum shapes can be generated on this tab.
 </a>
 <a href="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/bevel.md">
 <img title="Bevel" src="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/bevel2.gif" height="100"/>
+</a>
+<a href="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/crown.md">
+<img title="Crown" src="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/crown.gif" height="100"/>
 </a>

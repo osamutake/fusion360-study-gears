@@ -11,6 +11,7 @@
 <a href="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/rack.gif"><img src="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/rack.gif" width="200"/></a>
 <a href="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/worm+wheel.gif"><img src="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/worm+wheel.gif" width="200"/></a>
 <a href="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/bevel2.gif"><img src="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/bevel2.gif" width="200"/></a>
+<a href="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/crown.gif"><img src="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/crown.gif" width="200"/></a>
 
 ## このスクリプトでできること:
 
@@ -20,6 +21,7 @@
   * ラック（はすばも可能）
   * ウォームギアとウォームホイール
   * かさば歯車（まがり歯も可能）
+  * クラウンギア（はすば未対応）
   * らせん状の曲線（カムやスプリングの作成に使用）
 
 * 豊富なカスタマイズ項目
@@ -35,7 +37,7 @@
   下図は青がこのスクリプトで、黄緑が標準の Spur Gear スクリプトで生成した歯形です。標準の Spur Gear スクリプトで生成した歯車は大歯数歯車との組み合わせでは干渉を生じるため正しく回転しません。<br>
   <a href="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/fillet1.png"><img src="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/fillet1.png" width="200"/></a>
   <a href="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/fillet2.png"><img src="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/fillet2.png" width="200"/></a>
-  * ウォームホイールに対しては、このスクリプトは内部で実際にディスク状の部材をウォームギア状の切削具により切削し、歯車を成形する過程をシミュレーションすることにより、正しいウォームホイール形状を求めています。
+  * ウォームホイールやクラウンギア（フェースギア）に対しては、このスクリプトは内部で実際にディスク状あるいはドーナツ状の部材をウォームギア状あるいはピニオンギア状の切削具により切削し、歯車を成形する過程をシミュレーションすることにより、正しい歯車形状を求めています。
   * かさば歯車に対しては、このスクリプトは平歯車の歯形を流用するのではなく、球面インボリュート曲線を用いた正確な歯形を生成します。また歯元には球面トロコイド曲線による自然なフィレットと必要十分な切り下げも実現します。
 
 # 作者
@@ -138,6 +140,7 @@ MIT
 - [ラック＆ピニオン](https://github.com/osamutake/fusion360-study-gears-docs/blob/master/rack-ja.md)
 - [ウォーム＆ウォームホイール](https://github.com/osamutake/fusion360-study-gears-docs/blob/master/worm_and_wheel-ja.md)
 - [かさば歯車](https://github.com/osamutake/fusion360-study-gears-docs/blob/master/bevel-ja.md)
+- [クラウンギア（フェースギア）](https://github.com/osamutake/fusion360-study-gears-docs/blob/master/crown-ja.md)
 
 <a href="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/basics-ja.md">
 <img title="歯車の基礎知識" src="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/module.png" height="100"/>
@@ -165,4 +168,7 @@ MIT
 </a>
 <a href="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/bevel-ja.md">
 <img title="かさば歯車" src="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/bevel2.gif" height="100"/>
+</a>
+<a href="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/crown-ja.md">
+<img title="クラウンギア" src="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/crown.gif" height="100"/>
 </a>
