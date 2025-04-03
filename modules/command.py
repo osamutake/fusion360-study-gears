@@ -1,5 +1,6 @@
 from math import pi
 from typing import override
+import webbrowser
 
 import adsk.core, adsk.fusion
 
@@ -16,6 +17,7 @@ class Command(fh.TabbedCommand):
     fillet: adsk.core.ValueCommandInput
     shift: adsk.core.ValueCommandInput
     tip_fillet: adsk.core.ValueCommandInput
+    show_document: adsk.core.BoolValueCommandInput
 
     @override
     def on_created(self, args: adsk.core.CommandCreatedEventArgs):
@@ -74,6 +76,9 @@ class Command(fh.TabbedCommand):
             "Tip fillet extruding length"
             + " from the tip circle with module as the unit. Only for hobbing"
         )
+        self.show_document = cmd.commandInputs.addBoolValueInput(
+            "show_document", "Show document", False, initialValue=False
+        )
 
     @override
     def on_changed(self, args: adsk.core.InputChangedEventArgs | None):
@@ -81,6 +86,11 @@ class Command(fh.TabbedCommand):
         self.shift.isEnabled = True
         self.fillet.isEnabled = True
         self.r_clearance.isEnabled = True
+
+        if self.show_document.value:
+            readme = __file__.replace("\\", "/").replace("modules/command.py", "README.html")
+            webbrowser.open("file:///" + readme)
+        self.show_document.value = False
 
         super().on_changed(args)
 
