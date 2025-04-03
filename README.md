@@ -127,6 +127,12 @@ Bevel gears with arbitrary axes angle can be generated on this tab. They can be 
 
 <img src="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/bevel.gif" height="100"/><img src="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/bevel2.gif" height="100"/><img src="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/bevel6.gif" height="100">
 
+## Crown Tab
+
+Crown gears, which is also known as face gears, can be generated on this tab. At this moment, helical gears are not supported.
+
+<img src="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/crown.gif" height="100"/>
+
 ## Spiral
 
 Spiral curves and cum shapes can be generated on this tab.

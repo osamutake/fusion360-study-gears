@@ -123,6 +123,12 @@ MIT
 
 <img src="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/bevel.gif" height="100"/><img src="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/bevel2.gif" height="100"/><img src="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/bevel6.gif" height="100">
 
+## Crown タブ
+
+`Crown` タブで、クラウンギア（フェースギア）を生成できます。現在ははすばには対応していません。
+
+<img src="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/crown.gif" height="100"/>
+
 ## Spiral タブ
 
 `Spiral` タブで、らせん曲線やカム形状を生成できます。
