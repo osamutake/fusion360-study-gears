@@ -77,7 +77,7 @@ class Command(fh.TabbedCommand):
             + " from the tip circle with module as the unit. Only for hobbing"
         )
         self.show_document = cmd.commandInputs.addBoolValueInput(
-            "show_document", "Show document", False, initialValue=False
+            "show_document", "Show document", False
         )
 
     @override
