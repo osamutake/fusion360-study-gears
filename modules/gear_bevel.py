@@ -332,7 +332,7 @@ def gear_bevel(
         # determine the lofting range of the tooth groove shape
         scale_start = 1.02
         scale_end = (r0 - width) / r0 * 0.98
-        scale_n = 1 if beta == 0 else max(5, ceil(abs(spiral_angle(scale_end)) / pi * 20))
+        scale_n = 1 if beta == 0 else max(5, ceil(abs(spiral_angle(scale_end)) / pi * 40))
 
         # create the tooth patches for lofting by scaling and rotating the original patch
         patches: list[adsk.fusion.BRepBody] = []
