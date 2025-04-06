@@ -1,4 +1,5 @@
 from typing import cast, override
+from math import cos, atan, tan
 import adsk.core, adsk.fusion
 
 from . import gear_curve
@@ -17,6 +18,8 @@ class TabInput(fh.TabInput[command.Command]):
     module: adsk.core.ValueCommandInput
     pinion_teeth: adsk.core.IntegerSpinnerCommandInput
     number_teeth: adsk.core.IntegerSpinnerCommandInput
+    helix_angle: adsk.core.ValueCommandInput
+    helix_direction: adsk.core.RadioButtonGroupCommandInput
 
     @override
     def on_created(self, args: adsk.core.CommandCreatedEventArgs, inputs: adsk.core.CommandInputs):
@@ -37,6 +40,15 @@ class TabInput(fh.TabInput[command.Command]):
         self.width2.tooltip = (
             "Inward width of crown teeth from reference circle with module as unit."
         )
+        self.helix_angle = fh.value_control(
+            inputs, "helix_angle", "Helix Angle", "deg", "0", min=-90, max=90
+        )
+        self.helix_direction = inputs.addRadioButtonGroupCommandInput(
+            "helix_direction",
+            "Helix Direction",
+        )
+        self.helix_direction.listItems.add("Right", True)
+        self.helix_direction.listItems.add("Left", False)
 
     @override
     def on_changed(self, args: adsk.core.InputChangedEventArgs | None):
@@ -47,25 +59,26 @@ class TabInput(fh.TabInput[command.Command]):
         if is_preview:
             return
 
+        helix_angle = self.helix_angle.value
+        if self.helix_direction.selectedItem.name == "Left":
+            helix_angle *= -1
+
         # parameters for the pinion
         params = gear_curve.GearParams(
-            m=self.module.value,
+            m=self.module.value / cos(helix_angle),
             z=self.pinion_teeth.value,
-            alpha=self.parent.pressure_angle.value,
+            alpha=atan(tan(self.parent.pressure_angle.value) / cos(helix_angle)),
             shift=self.parent.shift.value,
             fillet=0.4,
-            mf=self.parent.dedendum.value,
-            mk=self.parent.addendum.value,
-            rc=self.parent.dedendum.value - self.parent.addendum.value,
+            mf=self.parent.dedendum.value * cos(helix_angle),
+            mk=self.parent.addendum.value * cos(helix_angle),
+            rc=(self.parent.dedendum.value - self.parent.addendum.value) * cos(helix_angle),
             backlash=-self.parent.backlash.value,
             inner=False,
         )
 
         generate_gear(
-            params,
-            self.number_teeth.value,
-            self.width1.value,
-            self.width2.value,
+            params, self.number_teeth.value, self.width1.value, self.width2.value, helix_angle
         )
 
 
@@ -74,6 +87,7 @@ def generate_gear(
     z: int,
     w1: float,
     w2: float,
+    helix_angle: float,
 ):
     app = adsk.core.Application.get()
     design = adsk.fusion.Design.cast(app.activeProduct)
@@ -82,11 +96,13 @@ def generate_gear(
     comp_occurrence = design.activeComponent.occurrences.addNewComponent(
         adsk.core.Matrix3D.create()
     )
+    if design.activeOccurrence is not None:
+        comp_occurrence.createForAssemblyContext(design.activeOccurrence)
     comp_occurrence.isGroundToParent = False
     comp = comp_occurrence.component
 
     # generate sub component containing the gear
-    gear_crown(comp, params, z, w1, w2)
+    gear_crown(comp_occurrence, params, z, w1, w2, helix_angle)
 
     gear = comp.occurrences.item(0).component
     comp.occurrences.item(0).isGroundToParent = False
@@ -98,6 +114,6 @@ def generate_gear(
         comp,
         comp.occurrences[0].createForAssemblyContext(comp_occurrence),
         comp_occurrence,
-        comp.occurrences[0].component.sketches[0].profiles[0],
+        comp.sketches[0].profiles[0].createForAssemblyContext(comp_occurrence),
         cast(adsk.fusion.JointDirections, adsk.fusion.JointDirections.ZAxisJointDirection),
     )

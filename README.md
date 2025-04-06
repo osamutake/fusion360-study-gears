@@ -24,7 +24,7 @@ Enjoy!
   * Rack (can be helical)
   * Worm gear & Worm wheel
   * Bevel gear (can be spiral)
-  * Crown gear (NO helical)
+  * Crown gear (can be helical)
   * Spiral curve (to create cum and spring)
 
 * Detailed customization of gears
@@ -129,7 +129,7 @@ Bevel gears with arbitrary axes angle can be generated on this tab. They can be 
 
 ## Crown Tab
 
-Crown gears, which is also known as face gears, can be generated on this tab. At this moment, helical gears are not supported.
+Crown gears, which is also known as face gears, can be generated on this tab.
 
 <img src="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/crown.gif" height="100"/>
 
