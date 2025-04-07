@@ -24,28 +24,33 @@ foreach my $md (@ARGV) {
            "--source $md --output $base.html ".
            "--title $base --no-dark-mode";
 
-    my $katex =
-      '<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.21/dist/katex.min.css" '.
-      'integrity="sha384-zh0CIslj+VczCZtlzBcjt5ppRcsAmDnRem7ESsYwWwg3m/OaJ2l4x7YBZl9Kxxib" '.
-      'crossorigin="anonymous">'. "\n";
-    $katex .=
-      '<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.21/dist/katex.min.js" '.
-      'integrity="sha384-Rma6DA2IPUwhNxmrB/7S3Tno0YY7sFu9WSYMCuulLhIqYSGZ2gKCJWIqhBWqMQfh" '.
-      'crossorigin="anonymous"></script>'. "\n";
-    $katex .=
-      '<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.21/dist/contrib/auto-render.min.js" '.
-      'integrity="sha384-hCXGrW6PitJEwbkoStFjeJxv+fSOOQKOPbJxSfM6G5sWZjAyWhXiTIIAmQqnlLlh" '.
-      'crossorigin="anonymous" onload="renderMathInElement(document.body, {'.
-      'delimiters: [{left: \'$$\', right: \'$$\', display: true}, {left: \'$\', right: \'$\', display: false}],'.
-      'throwOnError : false});"></script>'. "\n";
-
+    my $appendToBody = << "EOS";
+      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.21/dist/katex.min.css"
+        integrity="sha384-zh0CIslj+VczCZtlzBcjt5ppRcsAmDnRem7ESsYwWwg3m/OaJ2l4x7YBZl9Kxxib"
+        crossorigin="anonymous">
+      <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.21/dist/katex.min.js"
+        integrity="sha384-Rma6DA2IPUwhNxmrB/7S3Tno0YY7sFu9WSYMCuulLhIqYSGZ2gKCJWIqhBWqMQfh"
+        crossorigin="anonymous"></script>
+      <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.21/dist/contrib/auto-render.min.js"
+        integrity="sha384-hCXGrW6PitJEwbkoStFjeJxv+fSOOQKOPbJxSfM6G5sWZjAyWhXiTIIAmQqnlLlh" 
+        crossorigin="anonymous" onload="renderMathInElement(document.body, {
+        delimiters: [{left: \'$$\', right: \'$$\', display: true}, {left: \'$\', right: \'$\', display: false}],
+        throwOnError : false});"></script>
+      <script>
+        if (window.history.length == 1) {
+          if (window.navigator.language.indexOf('ja') == 0) {
+            window.location.href = 'README-ja.html';
+          }
+        }
+      </script>
+EOS
 
     my $html = read_file("$base.html");
     $html =~ s/<a href="([^"]+).md">/<a href="$1.html">/g;
     $html =~ s|"https://github.com/osamutake/fusion360-study-gears-docs/blob/master/|"docs/|g;
     $html =~ s|"https://github.com/osamutake/fusion360-study-gears/#|"../README.html#|g;
     $html =~ s|"https://github.com/osamutake/fusion360-study-gears/blob/main/README-ja.md#|"../README-ja.html#|g;
-    $html =~ s|<\/body>|$katex<\/body>|;
+    $html =~ s|<\/body>|$appendToBody<\/body>|;
 
     write_file("$base.html", $html);
 }
