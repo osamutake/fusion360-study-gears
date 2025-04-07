@@ -7,11 +7,11 @@
 <a href="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/spur.gif"><img src="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/spur.gif" width="200"/></a>
 <a href="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/helical.gif"><img src="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/helical.gif" width="200"/></a>
 <a href="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/internal.gif"><img src="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/internal.gif" width="200"/></a>
-
 <a href="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/rack.gif"><img src="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/rack.gif" width="200"/></a>
 <a href="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/worm+wheel.gif"><img src="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/worm+wheel.gif" width="200"/></a>
 <a href="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/bevel2.gif"><img src="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/bevel2.gif" width="200"/></a>
 <a href="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/crown.gif"><img src="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/crown.gif" width="200"/></a>
+<a href="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/archimedean.gif"><img src="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/archimedean.gif" width="200"/></a>
 
 ## このスクリプトでできること:
 
@@ -147,6 +147,7 @@ MIT
 - [ウォーム＆ウォームホイール](https://github.com/osamutake/fusion360-study-gears-docs/blob/master/worm_and_wheel-ja.md)
 - [かさば歯車](https://github.com/osamutake/fusion360-study-gears-docs/blob/master/bevel-ja.md)
 - [クラウンギア（フェースギア）](https://github.com/osamutake/fusion360-study-gears-docs/blob/master/crown-ja.md)
+- [つるまきたが歯車](https://github.com/osamutake/fusion360-study-gears-docs/blob/master/archimedean-ja.md)
 
 <a href="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/basics-ja.md">
 <img title="歯車の基礎知識" src="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/module.png" height="100"/>
@@ -177,4 +178,7 @@ MIT
 </a>
 <a href="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/crown-ja.md">
 <img title="クラウンギア" src="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/crown.gif" height="100"/>
+</a>
+<a href="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/archimedean-ja.md">
+<img title="つるまきたが歯車" src="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/archimedean.gif" height="100"/>
 </a>

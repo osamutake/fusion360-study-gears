@@ -9,11 +9,11 @@ Enjoy!
 <a href="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/spur.gif"><img src="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/spur.gif" width="200"/></a>
 <a href="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/helical.gif"><img src="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/helical.gif" width="200"/></a>
 <a href="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/internal.gif"><img src="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/internal.gif" width="200"/></a>
-
 <a href="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/rack.gif"><img src="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/rack.gif" width="200"/></a>
 <a href="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/worm+wheel.gif"><img src="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/worm+wheel.gif" width="200"/></a>
 <a href="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/bevel2.gif"><img src="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/bevel2.gif" width="200"/></a>
 <a href="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/crown.gif"><img src="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/crown.gif" width="200"/></a>
+<a href="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/archimedean.gif"><img src="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/archimedean.gif" width="200"/></a>
 
 ## Features:
 
@@ -151,7 +151,7 @@ Spiral curves and cum shapes can be generated on this tab.
 - [Worm and Worm wheel](https://github.com/osamutake/fusion360-study-gears-docs/blob/master/worm_and_wheel.md)
 - [Bevel gear](https://github.com/osamutake/fusion360-study-gears-docs/blob/master/bevel.md)
 - [Crown gear](https://github.com/osamutake/fusion360-study-gears-docs/blob/master/crown.md)
-
+- [Archimedean spiral gear](https://github.com/osamutake/fusion360-study-gears-docs/blob/master/archimedean.md)
 
 <a href="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/basics.md">
 <img title="Basics of gears" src="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/module.png" height="100"/>
@@ -182,4 +182,7 @@ Spiral curves and cum shapes can be generated on this tab.
 </a>
 <a href="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/crown.md">
 <img title="Crown" src="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/crown.gif" height="100"/>
+</a>
+<a href="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/archimedean.md">
+<img title="Archimedean spiral gear" src="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/archimedean.gif" height="100"/>
 </a>
