@@ -248,11 +248,11 @@ def gear_crown(
     def transform(p: T) -> T:
         p.transformBy(comp_occurrence.transform2)
         return p
-    cam.eye = transform(adsk.core.Point3D.create(0, 0, rp2 - rt))
+    cam.eye = transform(adsk.core.Point3D.create(-rp2, 0, 2 * rp2 - rt))
     cam.target = transform(adsk.core.Point3D.create(rp2, 0, -rt))
     cam.upVector = transform(adsk.core.Vector3D.create(0, 0, 1))
     cam.isSmoothTransition = True
-    cam.perspectiveAngle = pi / z
+    cam.perspectiveAngle = 2 * pi / z
     view.camera = cam
 
     # generate a patch of tooth profile
