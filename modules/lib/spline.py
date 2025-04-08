@@ -2,6 +2,8 @@
 # https://en.wikipedia.org/wiki/Akima_spline
 # https://github.com/Juul/akima-interpolator/tree/master
 
+from .fusion_helper import Vector
+
 
 def interpolate(xs: list[float], ys: list[float], periodic: bool = False):
     if len(xs) != len(ys):
@@ -32,7 +34,7 @@ def interpolate(xs: list[float], ys: list[float], periodic: bool = False):
 
     def spline(x: float):
         i = find_segment(x, xs)
-        i = max(0, min(i, len(coefs)-1))
+        i = max(0, min(i, len(coefs) - 1))
         return polynomial(x - xs[i], coefs[i])
 
     return spline
@@ -66,18 +68,14 @@ def calc_slopes(xs: list[float], ys: list[float], periodic: bool) -> list[float]
         result = []
         for i in range(n):
             i0 = i % (n - 1)
-            im1 = (i - 1 + (n-1)) % (n-1)
-            ip1 = (i + 1) % (n-1)
+            im1 = (i - 1 + (n - 1)) % (n - 1)
+            ip1 = (i + 1) % (n - 1)
             wp1, wm1 = weights[ip1], weights[im1]
             if abs(wp1) < float("1e-10") and abs(wm1) < float("1e-10"):
                 dx, dxm1 = xs[ip1] - xs[i0], xs[i0] - xs[im1]
-                result.append(
-                    (dx * dydx[im1] + dxm1 * dydx[i0]) / (dx + dxm1)
-                )
+                result.append((dx * dydx[im1] + dxm1 * dydx[i0]) / (dx + dxm1))
             else:
-                result.append(
-                    (wp1 * dydx[im1] + wm1 * dydx[i0]) / (wp1 + wm1)
-                )
+                result.append((wp1 * dydx[im1] + wm1 * dydx[i0]) / (wp1 + wm1))
     else:
         weights = [abs(dydx[i] - dydx[i - 1]) for i in range(1, n - 1)]
         result = [
@@ -124,3 +122,40 @@ def calc_coefs(xs: list[float], ys: list[float], slopes: list[float]) -> list[li
             ]
         )
     return coefs
+
+
+def evenly_spaced_points_on_spline(points: list[Vector], n: int):
+    """Calc evenly spaced control points along the spline curve"""
+
+    # パラメータを 0 から 1 としてスプライン曲線を作成
+    ts = [0.0]
+    for i in range(1, len(points)):
+        ts.append(ts[-1] + abs(points[i] - points[i - 1]))
+    total = ts[-1]
+    ts = [t / total for t in ts]  # 0 to 1
+    cx = interpolate(ts, [r.x for r in points])
+    cy = interpolate(ts, [r.y for r in points])
+
+    # n * 10 個の点を作って距離を求める
+    m = n * 10
+    lengths = [0.0]
+    last = points[0]
+    for i in range(1, m):
+        t = i / (m - 1)
+        curr = Vector(cx(t), cy(t))
+        lengths.append(lengths[-1] + abs(curr - last))
+        last = curr
+    total = lengths[-1]
+    lengths = [l / total for l in lengths]  # 0 to 1
+
+    result = [points[0]]
+    j = 1
+    for i in range(1, n - 1):
+        t = i / (n - 1)
+        while lengths[j] < t:
+            j += 1
+        t1 = (t - lengths[j - 1]) / (lengths[j] - lengths[j - 1])
+        result.append(Vector(cx((j + t1) / m), cy((j + t1) / m)))
+    result.append(points[-1])
+
+    return result

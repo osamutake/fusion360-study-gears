@@ -25,7 +25,7 @@ def gear_cylindrical(
     sketch = comp.sketches.add(comp.xYConstructionPlane)
     sketch.isComputeDeferred = True
 
-    # はすば補正を施した上で歯形を生成 involute & [fillet]
+    # Generate tooth profile with adjusted parameters for helical angle.
     # https://www.khkgears.co.jp/gear_technology/basic_guide/KHK365.html
     cos_beta = cos(beta)
     mn = m / cos_beta
@@ -39,20 +39,20 @@ def gear_cylindrical(
     curves = gear_curve.gear_curve(params_adjusted, tip_fillet * cos_beta)
     # curves: [(curve, tangent1, tangent2), ...]
 
-    # 歯先の点 (tip_fillet の分だけ延長済み)
+    # Point on the extended tip circle (extended for tip_fillet)
     if isinstance(curves[0][0], Vector):
         pt = curves[0][0] + Vector.polar(curves[0][3], curves[0][1])
     else:
         pt = curves[0][0](curves[0][1])
 
-    # 歯先円 (tip_fillet の分だけ延長済み)
+    # Draw extended tip circle
     tip_circle = sketch.sketchCurves.sketchCircles.addByCenterRadius(
         fh.point3d(),
         pt.norm(),
     )
     tip_circle.isFixed = True
 
-    # 歯の切り取り部分を描く
+    # draw groove shape
     lines1 = draw_part(sketch, curves, pi / z)
     sketch.geometricConstraints.addCoincident(lines1[0][1], tip_circle)
     lines2 = draw_part(sketch, curves, -pi / z, flip_y=True)
@@ -60,7 +60,7 @@ def gear_cylindrical(
     for curve in sketch.sketchCurves:
         curve.isFixed = True
 
-    # 歯底部分を描く
+    # bottom arc
     if lines1[-1][2].geometry.y != lines2[0][1].geometry.y:
         sketch.sketchCurves.sketchArcs.addByCenterStartEnd(
             fh.point3d(),
@@ -68,7 +68,7 @@ def gear_cylindrical(
             lines1[-1][2],
         ).isFixed = True
 
-    # 歯先を飛び出させる
+    # extend the groove shape slightly out of the tip circle
     l1 = sketch.sketchCurves.sketchLines.addByTwoPoints(
         lines1[0][1],
         fh.point3d(Vector(lines1[0][1].geometry) * 1.01),
@@ -85,7 +85,7 @@ def gear_cylindrical(
         l1.endSketchPoint,
     ).isFixed = True
 
-    # 円板を押し出す
+    # extrude the tip circle to generate a disk
     profiles = sorted(sketch.profiles, key=lambda p: p.boundingBox.minPoint.x)[
         0 : 2 if tip_fillet == 0 else 3
     ]
@@ -93,38 +93,42 @@ def gear_cylindrical(
         comp, profiles, fh.FeatureOperations.new_body, thickness, True, True
     ).bodies[0]
 
-    # 歯車の回転軸を描画する
+    # draw the axis
     sketch2 = comp.sketches.add(comp.xYConstructionPlane)
     center_axis = sketch2.sketchCurves.sketchLines.addByTwoPoints(
         fh.point3d(z=-thickness / 2), fh.point3d(z=thickness / 2)
     )
     center_axis.isFixed = True
 
-    # 基準円を描画する
+    # draw the reference circle
     circle = sketch2.sketchCurves.sketchCircles.addByCenterRadius(fh.point3d(), mn * z / 2)
     circle.isConstruction = True
     d = mn * z / 2
     sketch2.sketchDimensions.addDiameterDimension(circle, fh.point3d(d, d), isDriving=True)
     circle.isFixed = True
 
-    # 歯形を生成
-    teeth_profiles = sorted(  # 右から２つ取り出す
+    # cut the groove from the disk
+    teeth_profiles = sorted(  # two profiles from right
         sketch.profiles,
         key=lambda p: p.areaProperties().centroid.x,
         reverse=True,
     )[0 : 2]
     if beta == 0:
-        # 直歯を押し出して切り取る
+        # for non-helical gears, simply extrude the groove shape
         cut = fh.FeatureOperations.cut
         tooth_feature = fh.comp_extrude(
             comp, teeth_profiles, cut, thickness, True, True, participants=[disk]
         )
     else:
-        # このやり方だとなぜかずれが生じるので一旦方法を変える
+        # Sweeping the groove profile with rotation angle is theoretically 
+        # the best way to cut a helical tooth shape. However, we found it
+        # results in inaccurate results.
+        # So, to workaround it, we use loft feature instead.
         #
-        # # 通常のはすば歯車はひねりながら押し出せばいいのだが、
-        # # そのままやると元の図形がある中央位置に継ぎ目ができて
-        # # しまうので一旦端にずらしてから押し出す
+        # # If we sweep the groove shape both in the thickness direction,
+        # # we will have a seam at the center.
+        # # To avoid it, we first move the shape to one end of the thickness 
+        # # and sweep.
         # patch1 = fh.comp_patch(comp, teeth_profiles, fh.FeatureOperations.new_body)
         # matrix = fh.matrix_rotate(
         #     -thickness * tan(beta) / (mn * z),
@@ -133,7 +137,7 @@ def gear_cylindrical(
         #     fh.vector3d(0, 0, -thickness / 2),
         # )
         # patch1 = fh.comp_move_free(comp, patch1.bodies, matrix)
-
+        #
         # tooth_feature = fh.comp_sweep(
         #         comp,
         #         patch1.bodies[0].faces[0],
@@ -143,9 +147,10 @@ def gear_cylindrical(
         #         twist=2 * thickness * tan(beta) / (mn * z),
         #     )
         # )
-
+        #
         # fh.comp_remove(comp, patch1.bodies)
 
+        # create rotated patches for loft
         patches: list[adsk.fusion.BRepBody] = []
         n = max(3, ceil(thickness * tan(beta) / (mn * z) / (2 * pi / 18)))
         for i in range(n):
@@ -180,10 +185,10 @@ def gear_cylindrical(
         )
         fh.comp_remove(comp, patches)
 
-    # 円周方向に歯を複製する
+    # copy the groove around the axis
     fh.comp_circular_pattern(comp, tooth_feature, comp.zConstructionAxis, trunc(z))
 
-    # 歯車の回転軸＆基準円を表示する
+    # show the axis and reference circle
     sketch2.isVisible = True
 
 
@@ -215,6 +220,7 @@ def draw_part(
             s = c[2]
             e = c[1]
         if isinstance(c[0], Vector):
+            # draw arc
             # (center, start, end, radius)
             arc = sketch.sketchCurves.sketchArcs.addByCenterStartSweep(
                 point3d(c[0]),
@@ -226,6 +232,7 @@ def draw_part(
             else:
                 result.append((arc, arc.endSketchPoint, arc.startSketchPoint))
         else:
+            # draw parametric curve
             # c = (func, ts, te, n_points)
 
             def curve(func: Callable[[float], Vector], s: float, e: float, n: int):
@@ -249,7 +256,7 @@ def draw_part(
                 points3d[0] = last
             spline = sketch.sketchCurves.sketchFittedSplines.add(fh.collection(points3d))
 
-            # 接線制約を追加
+            # add tangent constraints
             delta = (e - s) / c[3] / 1000
 
             pss = points[0] + (c[0](s + delta) - points[0]) * 500

@@ -223,7 +223,7 @@ class Segments(Segment):
     def to_curve(self, n: int, translation: Callable[[Vector], Vector] | None = None) -> Curve:
         curve = Curve()
         if translation is not None:
-            # mypy は translation が後で None になる可能性を考えてエラーを出すが無視する
+            # mypy は translation が後から None になる可能性を考えてエラーを出すが無視する
             curve.param2point = lambda param: translation(self.point_at(param))  # type: ignore
         else:
             curve.param2point = self.point_at

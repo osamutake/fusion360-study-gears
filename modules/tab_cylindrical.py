@@ -30,7 +30,6 @@ class TabInput(fh.TabInput[command.Command]):
 
     @override
     def on_created(self, args: adsk.core.CommandCreatedEventArgs, inputs: adsk.core.CommandInputs):
-        # 平歯車のパラメータ
         self.module = fh.value_control(inputs, "module", "Module", "mm", "4", min_exclusive=0)
         self.module.tooltip = "The module of a gear is the teeth pitch length divided by PI."
 
@@ -77,8 +76,6 @@ class TabInput(fh.TabInput[command.Command]):
             self.worm_diameter.isMaximumLimited = False
             return
 
-        # 変更への対応
-
         worm_wheel = self.worm_wheel.value
         internal = self.internal.value
         module = self.module.value
@@ -110,10 +107,10 @@ class TabInput(fh.TabInput[command.Command]):
             self.tab.isActive and not self.worm_wheel.value and not self.internal.value
         )
 
-        # 基準円直径を計算
+        # calculate reference diameter
         self.dp.value = module / cos(helix_angle) * number_teeth
 
-        # 穴・外形の最小値・最大値を設定
+        # max/min values for diameter
         if internal:
             self.diameter.minimumValue = (
                 dp + module * (self.parent.shift.value - self.parent.addendum.value) * 2
@@ -134,7 +131,6 @@ class TabInput(fh.TabInput[command.Command]):
         if is_preview:
             return
 
-        # 平歯車を生成する
         params = gear_curve.GearParams(
             m=self.module.value,
             z=self.number_teeth.value,
@@ -181,49 +177,44 @@ def generate_gear(
     app = adsk.core.Application.get()
     design = adsk.fusion.Design.cast(app.activeProduct)
 
-    # ラッパーコンポーネントを作成
-    comp_occurrence = design.activeComponent.occurrences.addNewComponent(
+    # wrapper component
+    wrapper_occurrence = design.activeComponent.occurrences.addNewComponent(
         adsk.core.Matrix3D.create()
     )
-    comp_occurrence.isGroundToParent = False
-    comp = comp_occurrence.component
+    wrapper_occurrence.isGroundToParent = False
+    wrapper = wrapper_occurrence.component
 
-    # 歯車コンポーネントを作成
+    # generate the gear
     if worm_diameter > 0:
-        gear_worm_wheel(comp, params, worm_diameter, worm_spirals, thickness, helix_angle)
+        gear_worm_wheel(wrapper_occurrence, params, worm_diameter, worm_spirals, thickness, helix_angle)
     else:
         gear_cylindrical(
-            comp,
+            wrapper,
             params,
             thickness,
             helix_angle,
             tip_fillet,
         )
 
-    gear = comp.occurrences.item(0).component
-    comp.occurrences.item(0).isGroundToParent = False
+    gear = wrapper.occurrences.item(0).component
+    wrapper.occurrences.item(0).isGroundToParent = False
     if worm_diameter > 0:
-        # pylint: disable=inconsistent-quotes
-        gear.name = f"wheel{format(params.m*10,'.2g')}M{params.z}T"
+        gear.name = f"wheel{format(params.m*10,".2g")}M{params.z}T"
     elif internal:
-        # pylint: disable=inconsistent-quotes
-        gear.name = f"internal{format(params.m*10,'.2g')}M{params.z}T"
+        gear.name = f"internal{format(params.m*10,".2g")}M{params.z}T"
     elif helix_angle != 0:
-        # pylint: disable=inconsistent-quotes
-        gear.name = f"helical{format(params.m*10,'.2g')}M{params.z}T"
+        gear.name = f"helical{format(params.m*10,".2g")}M{params.z}T"
     else:
-        # pylint: disable=inconsistent-quotes
-        gear.name = f"spur{format(params.m*10,'.2g')}M{params.z}T"
+        gear.name = f"spur{format(params.m*10,".2g")}M{params.z}T"
     if params.shift != 0:
-        # pylint: disable=inconsistent-quotes
-        gear.name += f"_{format(params.shift,'.2g')}S"
+        gear.name += f"_{format(params.shift,".2g")}S"
 
-    comp.name = gear.name[0:1].capitalize() + gear.name[1:]
+    wrapper.name = gear.name[0:1].capitalize() + gear.name[1:]
 
-    # 中央の穴あるいは内歯車の外枠を生成する
+    # create the central hole or outer disk of internal gear
     rp = params.m / cos(helix_angle) * params.z
     if (internal and diameter > rp) or (not internal and 0 < diameter < rp - params.m * params.mf):
-        # 円筒を生成
+        # generate disk
         outer = gear.sketches.add(
             gear.xYConstructionPlane
         ).sketchCurves.sketchCircles.addByCenterRadius(
@@ -234,29 +225,33 @@ def generate_gear(
         profiles = gear.sketches.item(gear.sketches.count - 1).profiles.item(0)
         fh.comp_extrude(gear, profiles, fh.FeatureOperations.new_body, thickness, True, True)
 
-        # 円筒と歯車の大きい方から小さい方を切り取る
+        # compare volumes of the disk and the gear
         b0 = gear.bRepBodies.item(0)
         b1 = gear.bRepBodies.item(1)
         if b0.volume < b1.volume:
             b0, b1 = b1, b0
+
+        # cut smaller part from the larger part
         fh.comp_combine(gear, b0, b1, fh.FeatureOperations.cut)
 
-    # Create a joint geometry
+    # create a joint geometry
     fh.comp_joint_revolute(
-        comp,
+        wrapper,
         gear.originConstructionPoint,
-        comp.originConstructionPoint,
+        wrapper.originConstructionPoint,
         adsk.fusion.JointDirections.ZAxisJointDirection,
     )
 
-    # ウォームホイールをウォームと噛み合う位置に移動する
+    # move worm wheel to the meshing position
     if worm_spirals > 0:
-        matrix = fh.matrix_rotate(pi / 2, comp.xConstructionAxis.geometry.direction, fh.point3d())
+        matrix = fh.matrix_rotate(
+            pi / 2, wrapper.xConstructionAxis.geometry.direction, fh.point3d()
+        )
         matrix.translation = fh.vector3d(
             params.m * (params.z / cos(helix_angle) / 2 + params.shift) + worm_diameter / 2,
             0,
             pi * params.m / cos(helix_angle) * 2,
         )
-        comp_occurrence.isGroundToParent = False
-        design.activeComponent.transformOccurrences([comp_occurrence], [matrix], False)
-        design.snapshots.add()  # 位置をキャプチャ
+        wrapper_occurrence.isGroundToParent = False
+        design.activeComponent.transformOccurrences([wrapper_occurrence], [matrix], False)
+        design.snapshots.add()  # capture the position

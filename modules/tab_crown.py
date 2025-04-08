@@ -1,4 +1,4 @@
-from typing import cast, override
+from typing import override
 from math import cos, atan, tan
 import adsk.core, adsk.fusion
 
@@ -92,28 +92,16 @@ def generate_gear(
     app = adsk.core.Application.get()
     design = adsk.fusion.Design.cast(app.activeProduct)
 
-    # ラッパーコンポーネントを作成
-    comp_occurrence = design.activeComponent.occurrences.addNewComponent(
+    # Create the wrapper component
+    wrapper_occurrence = design.activeComponent.occurrences.addNewComponent(
         adsk.core.Matrix3D.create()
     )
     if design.activeOccurrence is not None:
-        comp_occurrence.createForAssemblyContext(design.activeOccurrence)
-    comp_occurrence.isGroundToParent = False
-    comp = comp_occurrence.component
+        wrapper_occurrence = wrapper_occurrence.createForAssemblyContext(design.activeOccurrence)
+    wrapper_occurrence.isGroundToParent = False
+    wrapper = wrapper_occurrence.component
 
     # generate sub component containing the gear
-    gear_crown(comp_occurrence, params, z, w1, w2, helix_angle)
-
-    gear = comp.occurrences.item(0).component
-    comp.occurrences.item(0).isGroundToParent = False
+    gear = gear_crown(wrapper_occurrence, params, z, w1, w2, helix_angle)
     gear.name = f"crown{format(params.m*10,".2g")}M{z}T"
-    comp.name = gear.name[0:1].capitalize() + gear.name[1:]
-
-    # create a joint between the wrapper and the gear components
-    fh.comp_built_joint_revolute(
-        comp,
-        comp.occurrences[0].createForAssemblyContext(comp_occurrence),
-        comp_occurrence,
-        comp.sketches[0].profiles[0].createForAssemblyContext(comp_occurrence),
-        cast(adsk.fusion.JointDirections, adsk.fusion.JointDirections.ZAxisJointDirection),
-    )
+    wrapper.name = gear.name[0:1].capitalize() + gear.name[1:]
