@@ -58,6 +58,19 @@ I do not guarantee the correctness of the generated gear shapes.
 
 MIT
 
+# Acknowledge
+
+The following resources were referenced. Many thanks to their authors:
+
+- "歯車のハナシ" by 歯車好きの元クルマエンジニア on Hatena Blog<br>
+  https://involutegearsoft.hatenablog.com/
+
+- KHK Gears (Kohara Gear Industry Co., Ltd.) official website<br>
+  https://www.khkgears.co.jp/gear_technology/guide_info.html
+
+- "Drawing Gears" by chromia on Qiita<br>
+  https://qiita.com/chromia/items/629311346c80dfd0eac7
+
 # Submodules
 
 - Document /docs : https://github.com/osamutake/fusion360-study-gears-docs
@@ -70,9 +83,11 @@ Download the  zip file from newest release page and place the `study-gears` fold
 
 # Basic usage
 
-1. Press `Ctrl+S` in `Design` environment of `Fusion 360` to activate `Scripts and Add-ins` dialog.
-2. Select `study-gears` and press `Run` button or just double click `study-gears` to activate the front panel of the script.
-3. For the first trial, just press `Ok` button without changing parameters, to find a spur gear generated.<br><br>
+1. Press `Ctrl+S` in `Design` environment of `Fusion 360` to activate `Scripts and Add-ins` dialog.<br><br>
+  <a href="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/script-and-addin.png"><img src="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/script-and-addin.png" width="200"/></a><br><br>
+2. Select `study-gears` and press `Run` button or just double click `study-gears` to activate the front panel of the script.<br><br>
+  <a href="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/tab_cylinder.png"><img src="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/tab_cylinder.png" width="200"/></a><br><br>
+1. For the first trial, just press `Ok` button without changing parameters, to find a spur gear generated.<br><br>
 <img src="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/first-spur-gear.jpg" width="300"/>
 
 # Gear design calculator
@@ -131,7 +146,7 @@ Bevel gears with arbitrary axes angle can be generated on this tab. They can be 
 
 Crown gears, which is also known as face gears, can be generated on this tab.
 
-<img src="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/crown.gif" height="100"/>
+<img src="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/crown.gif" height="100"/><img src="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/crown18.gif" height="100"/>
 
 ## Spiral
 
@@ -152,6 +167,7 @@ Spiral curves and cum shapes can be generated on this tab.
 - [Bevel gear](https://github.com/osamutake/fusion360-study-gears-docs/blob/master/bevel.md)
 - [Crown gear](https://github.com/osamutake/fusion360-study-gears-docs/blob/master/crown.md)
 - [Archimedean spiral gear](https://github.com/osamutake/fusion360-study-gears-docs/blob/master/archimedean.md)
+- [Geneva gear](https://github.com/osamutake/fusion360-study-gears-docs/blob/master/geneva.md)
 
 <a href="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/basics.md">
 <img title="Basics of gears" src="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/module.png" height="100"/>
@@ -185,4 +201,7 @@ Spiral curves and cum shapes can be generated on this tab.
 </a>
 <a href="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/archimedean.md">
 <img title="Archimedean spiral gear" src="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/archimedean.gif" height="100"/>
+</a>
+<a href="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/geneva.md">
+<img title="Geneva Gear" src="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/geneva8.gif" height="100"/>
 </a>
