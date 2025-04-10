@@ -104,9 +104,9 @@ A calculator that does calculations for gear design on web browsers is included 
 
 These calculations can be done with the calculator.
 
-# Brief introduction of four tabs
+# Brief introduction of five tabs
 
-The front panel of the script consists of four tabs, each of which generates different types of gears.
+The front panel of the script consists of five tabs, each of which generates different types of gears.
 
 ## Cylindrical Tab
 
