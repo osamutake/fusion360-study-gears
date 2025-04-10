@@ -79,7 +79,7 @@ The following resources were referenced. Many thanks to their authors:
 
 # Download & install
 
-Download the  zip file from newest release page and place the `study-gears` folder in the zip file in the `Fusion 360 API Scripts` folder, which is `C:\Users\(user name)\AppData\Roaming\Autodesk\Autodesk Fusion 360\API\Scripts` for Windows environment.
+Download the zip file from [the newest release](https://github.com/osamutake/fusion360-study-gears/releases) and place the `study-gears` folder in the zip file in the `Fusion 360 API Scripts` folder, which is `C:\Users\(user name)\AppData\Roaming\Autodesk\Autodesk Fusion 360\API\Scripts` for Windows environment.
 
 # Basic usage
 

@@ -75,7 +75,7 @@ MIT
 
 # ダウンロードとインストール
 
-最新リリースページから zip ファイルをダウンロードし、zip ファイル内の `study-gears` フォルダーを `Fusion 360 API Scripts` フォルダーに配置します。Windows 環境の場合、`C:\Users\(ユーザー名)\AppData\Roaming\Autodesk\Autodesk Fusion 360\API\Scripts` です。
+[最新リリースページ](https://github.com/osamutake/fusion360-study-gears/releases) から zip ファイルをダウンロードし、zip ファイル内の `study-gears` フォルダーを `Fusion 360 API Scripts` フォルダーに配置します。Windows 環境の場合、`C:\Users\(ユーザー名)\AppData\Roaming\Autodesk\Autodesk Fusion 360\API\Scripts` です。
 
 # 基本的な使い方
 
