@@ -20,7 +20,7 @@
   * 内歯車（はすばも可能）
   * ラック（はすばも可能）
   * ウォームギアとウォームホイール
-  * かさば歯車（まがり歯も可能）
+  * かさ歯車（まがり歯、内歯も可能）
   * クラウンギア（はすばも可能）
   * らせん状の曲線（カムやスプリングの作成に使用）
 
@@ -38,7 +38,7 @@
   <a href="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/fillet1.png"><img src="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/fillet1.png" width="200"/></a>
   <a href="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/fillet2.png"><img src="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/fillet2.png" width="200"/></a>
   * ウォームホイールやクラウンギア（フェースギア）に対しては、このスクリプトは内部で実際にディスク状あるいはドーナツ状の部材をウォームギア状あるいはピニオンギア状の切削具により切削し、歯車を成形する過程をシミュレーションすることにより、正しい歯車形状を求めています。
-  * かさば歯車に対しては、このスクリプトは平歯車の歯形を流用するのではなく、球面インボリュート曲線を用いた正確な歯形を生成します。また歯元には球面トロコイド曲線による自然なフィレットと必要十分な切り下げも実現します。
+  * かさ歯車に対しては、このスクリプトは平歯車の歯形を流用するのではなく、球面インボリュート曲線を用いた正確な歯形を生成します。また歯元には球面トロコイド曲線による自然なフィレットと必要十分な切り下げも実現します。
 
 # 作者
 
@@ -134,9 +134,9 @@ MIT
 
 ## Bevel タブ
 
-`Bevel` タブで、任意の軸角度を持つベベルギアを生成できます。はすばにすることも可能です。
+`Bevel` タブで、任意の軸角度を持つベベルギアを生成できます。はすばや内歯にすることも可能です。
 
-<img src="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/bevel.gif" height="100"/><img src="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/bevel2.gif" height="100"/><img src="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/bevel6.gif" height="100">
+<img src="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/bevel.gif" height="100"/><img src="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/bevel2.gif" height="100"/><img src="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/bevel6.gif" height="100"><img src="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/bevel26.gif" height="80">
 
 ## Crown タブ
 
@@ -160,7 +160,7 @@ MIT
 - [内歯車](https://github.com/osamutake/fusion360-study-gears-docs/blob/master/internal-ja.md)
 - [ラック＆ピニオン](https://github.com/osamutake/fusion360-study-gears-docs/blob/master/rack-ja.md)
 - [ウォーム＆ウォームホイール](https://github.com/osamutake/fusion360-study-gears-docs/blob/master/worm_and_wheel-ja.md)
-- [かさば歯車](https://github.com/osamutake/fusion360-study-gears-docs/blob/master/bevel-ja.md)
+- [かさ歯車](https://github.com/osamutake/fusion360-study-gears-docs/blob/master/bevel-ja.md)
 - [クラウンギア（フェースギア）](https://github.com/osamutake/fusion360-study-gears-docs/blob/master/crown-ja.md)
 - [つるまきたが歯車](https://github.com/osamutake/fusion360-study-gears-docs/blob/master/archimedean-ja.md)
 - [ゼネバ歯車](https://github.com/osamutake/fusion360-study-gears-docs/blob/master/geneva-ja.md)
@@ -190,7 +190,7 @@ MIT
 <img title="ウォーム＆ホイール" src="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/worm+wheel.gif" height="100"/>
 </a>
 <a href="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/bevel-ja.md">
-<img title="かさば歯車" src="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/bevel2.gif" height="100"/>
+<img title="かさ歯車" src="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/bevel2.gif" height="100"/>
 </a>
 <a href="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/crown-ja.md">
 <img title="クラウンギア" src="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/crown.gif" height="100"/>

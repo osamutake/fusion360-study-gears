@@ -32,7 +32,7 @@ class TabInput(fh.TabInput[command.Command]):
         self.z2 = inputs.addIntegerSpinnerCommandInput("bevel_z2", "Num. Teeth 2", 6, 200, 1, 40)
         self.width = fh.value_control(inputs, "bevel_width", "Width", "mm", "10")
         self.beta = fh.value_control(inputs, "bevel_beta", "Spiral Angle", "deg", "0")
-        
+
     @override
     def on_changed(self, args: adsk.core.InputChangedEventArgs | None):
         if self.tab.isActive:
@@ -45,7 +45,6 @@ class TabInput(fh.TabInput[command.Command]):
         if is_preview:
             return
 
-        # かさば歯車を生成する
         return gear_bevel(
             self.axes_angle.value,
             self.module.value,

@@ -23,7 +23,7 @@ Enjoy!
   * Internal gear (can be helical)
   * Rack (can be helical)
   * Worm gear & Worm wheel
-  * Bevel gear (can be spiral)
+  * Bevel gear (can be spiral and/or internal)
   * Crown gear (can be helical)
   * Spiral curve (to create cum and spring)
 
@@ -138,9 +138,9 @@ A pinion is a standard helical gear, while a worm wheel is a specially shaped ge
 
 ## Bevel Tab
 
-Bevel gears with arbitrary axes angle can be generated on this tab. They can be spiral, too.
+Bevel gears with arbitrary axes angle can be generated on this tab. They can be spiral and/or internal, too.
 
-<img src="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/bevel.gif" height="100"/><img src="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/bevel2.gif" height="100"/><img src="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/bevel6.gif" height="100">
+<img src="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/bevel.gif" height="100"/><img src="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/bevel2.gif" height="100"/><img src="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/bevel6.gif" height="100"><img src="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/bevel26.gif" height="80">
 
 ## Crown Tab
 
