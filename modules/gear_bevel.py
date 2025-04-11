@@ -384,7 +384,7 @@ def gear_bevel(
             ).bodies[0]
 
             donut2 = None
-            if internal: # thinner donut upto tooth bottom
+            if internal:  # thinner donut upto tooth bottom
                 donut2 = fh.comp_revolve(
                     gear,
                     sketch2.profiles[0],
@@ -471,7 +471,7 @@ def gear_bevel(
             fh.app_refresh()
 
         if phi != 0:
-            if z % 2 == 1: # adjust phase of the gear
+            if z % 2 == 1:  # adjust phase of the gear
                 fh.comp_move_rotate(gear, gear_body, axis_line, pi / z)
             # rotate the gear for meshing the internal gear
             gear_occurrence.transform2 = fh.matrix_rotate(
@@ -538,6 +538,11 @@ def gear_bevel(
     )
 
     sketch0.isVisible = False
+
+    if internal != 0:  # turn the two gears
+        wrapper_occurrence.transform2 = fh.matrix_rotate(
+            pi, fh.vector3d(1, 0, 0), base=wrapper_occurrence.transform2
+        )
 
     # adding motion link is not supported by Fusion360 API yet
     # https://forums.autodesk.com/t5/fusion-api-and-scripts/adding-motion-link-to-the-fusion-360-api/td-p/11728121
