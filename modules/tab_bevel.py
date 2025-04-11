@@ -5,11 +5,12 @@ import adsk.core, adsk.fusion
 from . import command
 from .lib import fusion_helper as fh
 from .gear_bevel import gear_bevel
+from .locales import LOCALE
 
-
+l = LOCALE.bevel
 class TabInput(fh.TabInput[command.Command]):
     id = "bevel_tab"
-    name = "Bevel"
+    name = l.bevel
 
     # parent: command.Command
     # tab: adsk.core.TabCommandInput
@@ -24,14 +25,15 @@ class TabInput(fh.TabInput[command.Command]):
 
     @override
     def on_created(self, _: adsk.core.CommandCreatedEventArgs, inputs: adsk.core.CommandInputs):
-        self.axes_angle = fh.value_control(inputs, "bevel_axes_angle", "Axes Angle", "deg", "90")
+        self.axes_angle = fh.value_control(inputs, "bevel_axes_angle", l.axes_angle, "deg", "90")
+        self.axes_angle.tooltip = l.axes_angle_tooltip
         self.module = fh.value_control(
-            inputs, "bevel_module", "Module", "mm", "3", min_exclusive=0
+            inputs, "bevel_module", l.module, "mm", "3", min_exclusive=0
         )
-        self.z1 = inputs.addIntegerSpinnerCommandInput("bevel_z1", "Num. Teeth 1", 6, 200, 1, 20)
-        self.z2 = inputs.addIntegerSpinnerCommandInput("bevel_z2", "Num. Teeth 2", 6, 200, 1, 40)
-        self.width = fh.value_control(inputs, "bevel_width", "Width", "mm", "10")
-        self.beta = fh.value_control(inputs, "bevel_beta", "Spiral Angle", "deg", "0")
+        self.z1 = inputs.addIntegerSpinnerCommandInput("bevel_z1", l.n_teeth1, 6, 200, 1, 20)
+        self.z2 = inputs.addIntegerSpinnerCommandInput("bevel_z2", l.n_teeth2, 6, 200, 1, 40)
+        self.width = fh.value_control(inputs, "bevel_width", l.width, "mm", "10")
+        self.beta = fh.value_control(inputs, "bevel_beta", l.spiral_angle, "deg", "0")
 
     @override
     def on_changed(self, args: adsk.core.InputChangedEventArgs | None):

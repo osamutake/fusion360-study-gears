@@ -5,6 +5,9 @@ import webbrowser
 import adsk.core, adsk.fusion
 
 from .lib import fusion_helper as fh
+from .locales import LOCALE
+
+l = LOCALE.details
 
 
 class Command(fh.TabbedCommand):
@@ -28,56 +31,58 @@ class Command(fh.TabbedCommand):
         cmd = adsk.core.Command.cast(args.command)
 
         # set minimum width of the dialog to show all tabs
-        cmd.setDialogMinimumSize(300, 200)
+        cmd.setDialogMinimumSize(350, 200)
 
-        self.details_group = cmd.commandInputs.addGroupCommandInput("details", "Details")
+        self.details_group = cmd.commandInputs.addGroupCommandInput("details", l.details)
         self.details_group.isExpanded = False
         details = self.details_group.children
 
         self.pressure_angle = fh.value_control(
             details,
             "pressure_angle",
-            "Pressure Angle",
+            l.pressure_angle,
             "deg",
             "20",
             min=10 / 180 * pi,
             max=32 / 180 * pi,
+            tooltip=l.pressure_angle_tooltip,
         )
-        self.backlash = fh.value_control(details, "backlash", "Backlash", "mm", "0.05")
-        self.backlash.tooltip = "The backlash between gears with module as unit length."
-        self.pressure_angle.tooltip = "The pressure angle of the gear (default = 20 deg)."
-        self.shift = fh.value_control(details, "shift", "Shift", "", "0.0", min=-0.5, max=2.0)
-        self.shift.tooltip = "The shift of the rack tool with module as the unit."
-        self.fillet = fh.value_control(details, "fillet", "Fillet", "", "0.4", min=0, max=0.4)
-        self.fillet.tooltip = "The fillet radius of the rack tool with module as the unit."
+        self.backlash = fh.value_control(details, "backlash", l.backlash, "mm", "0.05")
+        self.backlash.tooltip = l.backlash_tooltip
+        self.shift = fh.value_control(details, "shift", l.shift, "", "0.0", min=-0.5, max=2.0)
+        self.shift.tooltip = l.shift_tooltip
+        self.fillet = fh.value_control(details, "fillet", l.fillet, "", "0.4", min=0, max=0.4)
+        self.fillet.tooltip = l.fillet_tooltip
         self.addendum = fh.value_control(
-            details, "addendum", "Addendum", "", "1.00", min=0.5, max=2.0
+            details, "addendum", l.addendum, "", "1.00", min=0.5, max=2.0
         )
-        self.addendum.tooltip = (
-            "Distance from the pitch circle to the tip circle with module as the unit."
-        )
+        self.addendum.tooltip = l.addendum_tooltip
         self.dedendum = fh.value_control(
-            details, "dedendum", "Dedendum", "", "1.25", min=0.5, max=2.0
+            details, "dedendum", l.dedendum, "", "1.25", min=0.5, max=2.0
         )
-        self.dedendum.tooltip = (
-            "Distance from the pitch circle to the root circle with module as the unit."
-        )
+        self.dedendum.tooltip = l.dedendum_tooltip
         self.r_clearance = fh.value_control(
-            details, "r_clearance", "Radial Clearance", "", "0.25", min=0, max=1
+            details,
+            "r_clearance",
+            l.r_clearance,
+            "",
+            "0.25",
+            min=0,
+            max=1,
         )
-        self.r_clearance.tooltip = (
-            "The distance between the root circle to the tip of the other gear, "
-            + "which determines the maximum fillet diameter."
-        )
+        self.r_clearance.tooltip = l.r_clearance_tooltip
         self.tip_fillet = fh.value_control(
-            details, "tip_radius", "Tip fillet length", "", "0", min=0, max=1
+            details,
+            "tip_radius",
+            l.tip_fillet,
+            "",
+            "0",
+            min=0,
+            max=1,
         )
-        self.tip_fillet.tooltip = (
-            "Tip fillet extruding length"
-            + " from the tip circle with module as the unit. Only for hobbing"
-        )
+        self.tip_fillet.tooltip = l.tip_fillet_tooltip
         self.show_document = cmd.commandInputs.addBoolValueInput(
-            "show_document", "Show document", False
+            "show_document", l.show_document, False
         )
 
     @override

@@ -6,11 +6,14 @@ from . import gear_curve
 from . import command
 from .gear_crown import gear_crown
 from .lib import fusion_helper as fh
+from .locales import LOCALE
+
+l = LOCALE.crown
 
 
 class TabInput(fh.TabInput[command.Command]):
     id = "crown_tab"
-    name = "Crown"
+    name = l.crown
 
     # parent: command.Command
     # tab: adsk.core.TabCommandInput
@@ -23,32 +26,28 @@ class TabInput(fh.TabInput[command.Command]):
 
     @override
     def on_created(self, args: adsk.core.CommandCreatedEventArgs, inputs: adsk.core.CommandInputs):
-        self.module = fh.value_control(inputs, "module", "Module", "mm", "4", min_exclusive=0)
-        self.module.tooltip = "The module of a gear is the teeth pitch length divided by PI."
+        self.module = fh.value_control(inputs, "module", l.module, "mm", "4", min_exclusive=0)
+        self.module.tooltip = l.module_tooltip
         self.number_teeth = inputs.addIntegerSpinnerCommandInput(
-            "number_teeth", "Crown Teeth", 6, 200, 1, 40
+            "number_teeth", l.crown_teeth, 6, 200, 1, 40
         )
         self.pinion_teeth = inputs.addIntegerSpinnerCommandInput(
-            "pinion_teeth", "Pinion Teeth", 6, 200, 1, 12
+            "pinion_teeth", l.pinion_teeth, 6, 200, 1, 12
         )
 
-        self.width1 = fh.value_control(inputs, "width1", "Outer Extent", "", "2", min=0)
+        self.width1 = fh.value_control(inputs, "width1", l.outer_ext, "", "2", min=0)
         self.width2 = fh.value_control(inputs, "width2", "Inner Extent", "", "2", min=0)
-        self.width1.tooltip = (
-            "Outward width of crown teeth from reference circle with module as unit."
-        )
-        self.width2.tooltip = (
-            "Inward width of crown teeth from reference circle with module as unit."
-        )
+        self.width1.tooltip = l.outer_ext_tooltip
+        self.width2.tooltip = l.inner_ext_tooltip
         self.helix_angle = fh.value_control(
-            inputs, "helix_angle", "Helix Angle", "deg", "0", min=-90, max=90
+            inputs, "helix_angle", l.helix_angle, "deg", "0", min=-90, max=90
         )
         self.helix_direction = inputs.addRadioButtonGroupCommandInput(
             "helix_direction",
-            "Helix Direction",
+            l.helix_direction,
         )
-        self.helix_direction.listItems.add("Right", True)
-        self.helix_direction.listItems.add("Left", False)
+        self.helix_direction.listItems.add(l.right, True)
+        self.helix_direction.listItems.add(l.left, False)
 
     @override
     def on_changed(self, args: adsk.core.InputChangedEventArgs | None):

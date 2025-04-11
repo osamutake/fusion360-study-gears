@@ -7,13 +7,14 @@ from .lib import fusion_helper as fh
 from . import command
 from .gear_rack import RackParams, gear_rack
 from .gear_worm import gear_worm
+from .locales import LOCALE
 
 EPS = 1e-5
 
-
+l = LOCALE.rack_worm
 class TabInput(fh.TabInput[command.Command]):
     id = "rack_tab"
-    name = "Rack/Worm"
+    name = l.rack_worm
 
     # parent: command.Command
     # tab: adsk.core.TabCommandInput
@@ -30,26 +31,29 @@ class TabInput(fh.TabInput[command.Command]):
 
     @override
     def on_created(self, _: adsk.core.CommandCreatedEventArgs, inputs: adsk.core.CommandInputs):
-        self.module = fh.value_control(inputs, "rack_module", "Module", "mm", "4", min_exclusive=0)
+        self.module = fh.value_control(inputs, "rack_module", l.module, "mm", "4", min_exclusive=0)
+        self.module.tooltip = l.module_tooltip
         self.thickness = fh.value_control(
-            inputs, "rack_thickness", "Thickness", "mm", "15", min_exclusive=0
+            inputs, "rack_thickness", l.thickness, "mm", "15", min_exclusive=0
         )
+        self.thickness.tooltip = l.thickness_tooltip
         self.length = fh.value_control(
-            inputs, "rack_length", "Length", "mm", "200", min_exclusive=0
+            inputs, "rack_length", l.length, "mm", "200", min_exclusive=0
         )
         self.angle = fh.value_control(
-            inputs, "rack_angle", "Helix Angle", "deg", "0", min=-60, max=60
+            inputs, "rack_angle", l.helix_angle, "deg", "0", min=-60, max=60
         )
         self.worm_direction = inputs.addRadioButtonGroupCommandInput(
-            "angle_direction", "Direction"
+            "angle_direction", l.helix_direction
         )
-        self.worm_direction.listItems.add("Right", True)
-        self.worm_direction.listItems.add("Left", False)
-        self.worm = inputs.addIntegerSpinnerCommandInput("rack_worm", "Num. Spiral", 0, 10, 1, 0)
-        self.worm.tooltip = "The number of spiral turns for the worm gear. Set 0 for rack gear."
+        self.worm_direction.listItems.add(l.right, True)
+        self.worm_direction.listItems.add(l.left, False)
+        self.worm = inputs.addIntegerSpinnerCommandInput("rack_worm", l.worm_spirals, 0, 10, 1, 0)
+        self.worm.tooltip = l.worm_spirals_tooltip
         self.height = fh.value_control(
-            inputs, "rack_height", "Height", "mm", "20", min_exclusive=0
+            inputs, "rack_height", l.height, "mm", "20", min_exclusive=0
         )
+        self.height.tooltip = l.height_tooltip
 
     @override
     def on_changed(self, args: adsk.core.InputChangedEventArgs | None):

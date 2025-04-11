@@ -7,18 +7,21 @@ from . import command
 from .gear_worm_wheel import gear_worm_wheel
 from .gear_cylindrical import gear_cylindrical
 from .lib import fusion_helper as fh
+from .locales import LOCALE
+
+l = LOCALE.cylindrical
 
 
 class TabInput(fh.TabInput[command.Command]):
     id = "cylindrical_tab"
-    name = "Cylindrical"
+    name = l.cylindrical
 
     # parent: command.Command
     # tab: adsk.core.TabCommandInput
 
     module: adsk.core.ValueCommandInput
     number_teeth: adsk.core.IntegerSpinnerCommandInput
-    thickness: adsk.core.DistanceValueCommandInput
+    thickness: adsk.core.ValueCommandInput
     worm_diameter: adsk.core.ValueCommandInput
     worm_wheel: adsk.core.BoolValueCommandInput
     worm_spirals: adsk.core.IntegerSpinnerCommandInput
@@ -30,42 +33,34 @@ class TabInput(fh.TabInput[command.Command]):
 
     @override
     def on_created(self, args: adsk.core.CommandCreatedEventArgs, inputs: adsk.core.CommandInputs):
-        self.module = fh.value_control(inputs, "module", "Module", "mm", "4", min_exclusive=0)
-        self.module.tooltip = "The module of a gear is the teeth pitch length divided by PI."
+        self.module = fh.value_control(inputs, "module", l.module, "mm", "4", min_exclusive=0)
+        self.module.tooltip = l.module_tooltip
 
         self.number_teeth = inputs.addIntegerSpinnerCommandInput(
-            "number_teeth", "Num. Teeth", 6, 200, 1, 12
+            "number_teeth", l.number_teeth, 6, 200, 1, 12
         )
-        self.thickness = inputs.addDistanceValueCommandInput(
-            "thickness", "Thickness", fh.value_input("5")
-        )
-        self.thickness.setManipulator(fh.point3d(), fh.vector3d(z=1))
+        self.thickness = fh.value_control(inputs, "thickness", l.thickness, "", "5")
         self.helix_angle = fh.value_control(
-            inputs, "helix_angle", "Helix Angle", "deg", "0", min=-60, max=60
+            inputs, "helix_angle", l.helix_angle, "deg", "0", min=-60, max=60
         )
         self.helix_direction = inputs.addRadioButtonGroupCommandInput(
-            "helix_direction", "Helix Direction"
+            "helix_direction", l.helix_direction
         )
-        self.helix_direction.listItems.add("Right", True)
-        self.helix_direction.listItems.add("Left", False)
-        self.diameter = fh.value_control(
-            inputs, "diameter", "Hole/Outer Diameter", "mm", "0", min=0
-        )
-        self.diameter.tooltip = (
-            "The outer diameter if Internal Gear is checked, otherwise the hole diameter."
-        )
-        self.internal = inputs.addBoolValueInput("internal", "Internal Gear", True, "", False)
-        self.worm_wheel = inputs.addBoolValueInput("worm_wheel", "Worm Wheel", True, "", False)
+        self.helix_direction.listItems.add(l.right, True)
+        self.helix_direction.listItems.add(l.left, False)
+        self.diameter = fh.value_control(inputs, "diameter", l.diameter, "mm", "0", min=0)
+        self.diameter.tooltip = l.diameter_tooltip
+        self.internal = inputs.addBoolValueInput("internal", l.internal, True, "", False)
+        self.worm_wheel = inputs.addBoolValueInput("worm_wheel", l.worm_wheel, True, "", False)
         self.worm_diameter = fh.value_control(
-            inputs, "worm_diameter", "Worm Diameter", "mm", "0", min=0, is_visible=False
+            inputs, "worm_diameter", l.worm_diameter, "mm", "0", min=0, is_visible=False
         )
         self.worm_spirals = inputs.addIntegerSpinnerCommandInput(
-            "worm_spirals", "Num. Spiral", 1, 10, 1, 1
+            "worm_spirals", l.worm_spirals, 1, 10, 1, 1
         )
         self.worm_spirals.isVisible = False
-        self.dp = fh.value_control(
-            inputs, "dp", "Reference Diameter", "mm", "48", is_enabled=False
-        )
+        self.dp = fh.value_control(inputs, "dp", l.dp, "mm", "48", is_enabled=False)
+        self.dp.tooltip = l.dp_tooltip
 
     @override
     def on_changed(self, args: adsk.core.InputChangedEventArgs | None):
@@ -186,7 +181,9 @@ def generate_gear(
 
     # generate the gear
     if worm_diameter > 0:
-        gear_worm_wheel(wrapper_occurrence, params, worm_diameter, worm_spirals, thickness, helix_angle)
+        gear_worm_wheel(
+            wrapper_occurrence, params, worm_diameter, worm_spirals, thickness, helix_angle
+        )
     else:
         gear_cylindrical(
             wrapper,

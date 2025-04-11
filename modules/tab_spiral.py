@@ -6,11 +6,12 @@ import adsk.core, adsk.fusion
 from .lib import fusion_helper as fh
 from . import command
 from .lib import spline
+from .locales import LOCALE
 
-
+l = LOCALE.spiral
 class TabInput(fh.TabInput[command.Command]):
     id = "spiral_tab"
-    name = "Spiral"
+    name = l.spiral
 
     # parent: command.Command
     # tab: adsk.core.TabCommandInput
@@ -24,14 +25,19 @@ class TabInput(fh.TabInput[command.Command]):
     @override
     def on_created(self, _: adsk.core.CommandCreatedEventArgs, inputs: adsk.core.CommandInputs):
         self.angle = fh.value_control(
-            inputs, "spiral_angle", "Total Angle", "deg", "360", min_exclusive=0
+            inputs, "spiral_angle", l.angle, "deg", "360", min_exclusive=0
         )
+        self.angle.tooltip = l.angle_tooltip
         self.radii = inputs.addTextBoxCommandInput(
-            "spiral_radii", "Radii", "10mm, 20mm", 10, False
+            "spiral_radii", l.radii, "10mm, 20mm", 10, False
         )
-        self.height = fh.value_control(inputs, "spiral_height", "Height", "mm", "0")
-        self.flip = inputs.addBoolValueInput("spiral_flip", "Flip", True, "", False)
-        self.spline = inputs.addBoolValueInput("spiral_spline", "Spline", True, "", False)
+        self.radii.tooltip = l.radii_tooltip
+        self.height = fh.value_control(inputs, "spiral_height", l.height, "mm", "0")
+        self.height.tooltip = l.height_tooltip
+        self.flip = inputs.addBoolValueInput("spiral_flip", l.flip, True, "", False)
+        self.flip.tooltip = l.flip_tooltip
+        self.spline = inputs.addBoolValueInput("spiral_spline", l.spline, True, "", False)
+        self.spline.tooltip = l.spline_tooltip
 
     @override
     def on_changed(self, args: adsk.core.InputChangedEventArgs | None):
