@@ -39,7 +39,7 @@ class TabInput(fh.TabInput[command.Command]):
         self.number_teeth = inputs.addIntegerSpinnerCommandInput(
             "number_teeth", l.number_teeth, 6, 200, 1, 12
         )
-        self.thickness = fh.value_control(inputs, "thickness", l.thickness, "", "5")
+        self.thickness = fh.value_control(inputs, "thickness", l.thickness, "mm", "5")
         self.helix_angle = fh.value_control(
             inputs, "helix_angle", l.helix_angle, "deg", "0", min=-60, max=60
         )
