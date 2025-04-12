@@ -105,9 +105,9 @@ class TabInput(fh.TabInput[command.Command]):
             return gear_worm(
                 params,
                 self.parent.tip_fillet.value,
-                1 if self.worm_direction.selectedItem.name == "Right" else -1,
+                1 if self.worm_direction.selectedItem.name == l.right else -1,
             )
         else:
-            if self.worm_direction.selectedItem.name == "Left":
+            if self.worm_direction.selectedItem.name == l.left:
                 params.angle *= -1
             return gear_rack(params, self.parent.tip_fillet.value)

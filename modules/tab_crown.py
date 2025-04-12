@@ -59,7 +59,7 @@ class TabInput(fh.TabInput[command.Command]):
             return
 
         helix_angle = self.helix_angle.value
-        if self.helix_direction.selectedItem.name == "Left":
+        if self.helix_direction.selectedItem.name == l.left:
             helix_angle *= -1
 
         # parameters for the pinion

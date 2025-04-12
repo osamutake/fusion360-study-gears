@@ -144,7 +144,7 @@ class TabInput(fh.TabInput[command.Command]):
         if not self.worm_wheel.value:
             worm_diameter = 0
             worm_spirals = 0
-        if self.helix_direction.selectedItem.name == "Left":
+        if self.helix_direction.selectedItem.name == l.left:
             self.helix_angle.value = -self.helix_angle.value
 
         generate_gear(
