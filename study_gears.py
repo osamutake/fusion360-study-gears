@@ -6,6 +6,7 @@ import pathlib
 import traceback
 
 from .modules import command
+from .modules import locales
 from .modules import gear_bevel
 from .modules import gear_crown
 from .modules import gear_curve
@@ -40,6 +41,7 @@ def run(_context):
             importlib.reload(spline)
 
             importlib.reload(command)
+            importlib.reload(locales)
             importlib.reload(gear_bevel)
             importlib.reload(gear_crown)
             importlib.reload(gear_curve)
