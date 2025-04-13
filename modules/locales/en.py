@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 
 @dataclass
@@ -84,6 +84,7 @@ class Bevel:
     gamma2 = "Angular radius 2"
     gamma2_tooltip = "The angular radius of gear2's pitch circle."
 
+
 @dataclass
 class Crown:
     crown = "Crown"
@@ -133,12 +134,12 @@ class Spiral:
 
 @dataclass
 class Locale:
-    details = Details()
-    cylindrical = Cylindrical()
-    rack_worm = RackWorm()
-    bevel = Bevel()
-    crown = Crown()
-    spiral = Spiral()
+    details: Details = field(default_factory=Details)
+    cylindrical: Cylindrical = field(default_factory=Cylindrical)
+    rack_worm: RackWorm = field(default_factory=RackWorm)
+    bevel: Bevel = field(default_factory=Bevel)
+    crown: Crown = field(default_factory=Crown)
+    spiral: Spiral = field(default_factory=Spiral)
 
 
 LOCALE = Locale()

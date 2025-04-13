@@ -25,6 +25,5 @@ app = adsk.core.Application.get()
 locale = cast(int, app.preferences.generalPreferences.userLanguage)
 
 LOCALE = en.LOCALE
-match locale:
-    case JA:
-        LOCALE = ja.LOCALE
+if locale == JA:
+    LOCALE = ja.LOCALE
