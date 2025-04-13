@@ -77,7 +77,12 @@ class Bevel:
     n_teeth2 = "Num. teeth 2"
     width = "Tooth width"
     spiral_angle = "Spiral angle"
-
+    sphere_radius = "Sphere radius"
+    sphere_radius_tooltip = "Radius of the virtual sphere that the bevel gear is inscribed in."
+    gamma1 = "Angular radius 1"
+    gamma1_tooltip = "The angular radius of gear1's pitch circle."
+    gamma2 = "Angular radius 2"
+    gamma2_tooltip = "The angular radius of gear2's pitch circle."
 
 @dataclass
 class Crown:

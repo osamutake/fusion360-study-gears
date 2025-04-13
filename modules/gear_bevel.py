@@ -115,6 +115,7 @@ def gear_bevel(
                 points.append(trans(t, v, axis, gamma_b))
             return points
 
+        # calculate the trace of point t1 on the rotational coordinate system of gear2
         def spherical_trochoid(
             t1: Vector,  # tip point on the extended tip circle
             q2: Vector,  # original point on the base circle of the 2nd gear
@@ -130,7 +131,7 @@ def gear_bevel(
             def trochoid_core(t: float):
                 return t1.rotate_axis(axis1, -t).rotate_axis(axis2, (-t / z2) * z1)
 
-            # sweep t from 0 to the tip circle
+            # sweep t from 0 until getting out of the tip circle
             i = 0
             while True:
                 t = (0.02 * (i * pi)) / sqrt(z1)
@@ -139,11 +140,11 @@ def gear_bevel(
                     break
                 i += 1
 
-            # bottom circle
+            # bottom circle: find the point with minimum gamma
             t1a = minimize(0, t1b, lambda t: (trochoid_core(t) - axis2).norm())
 
             if gamma_b2 > gamma_f2:
-                # base circle
+                # cross section with the base circle
                 t1c = minimize(
                     t1a,
                     t1b,
@@ -157,19 +158,21 @@ def gear_bevel(
                 """Measure the distance from the involute curve at the same gamma value"""
                 v = trochoid_core(t)
                 gamma = acos(v.dot(axis2))
+                # involute curve of gear2
                 u = trans(gamma2epsilon(gamma, gamma_b2), q2, axis2, gamma_b2)
                 return (u - v).norm()
 
-            # find the point on the involute curve that is closest to the trochoid curve
+            # find the point on the trochoid curve that is closest to the involute curve
+            # it may not a cross point but a tangent point.
             t1d = minimize(t1c, t1b, distance_from_involute)
 
-            # use the part from bottom circle (t1a) to cross point with involute (t1d)
+            # use the part from bottom circle (t1a) to the contact point with involute (t1d)
             c1: list[Vector] = []  # trochoid curve
             for i in range(0, n + 1):
                 t = t1a + ((t1d - t1a) * i) / n
                 c1.append(trochoid_core(t))
 
-            gamma = acos(c1[-1].dot(axis2))  # for cross point with involute curve
+            gamma = acos(c1[-1].dot(axis2))  # for contact point with involute curve
             return (c1, gamma)
 
         ext = rm * 0.2  # extension of the involute curve

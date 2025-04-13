@@ -70,6 +70,12 @@ bv.n_teeth1 = "歯数1"
 bv.n_teeth2 = "歯数2"
 bv.width = "歯幅"
 bv.spiral_angle = "ねじれ角"
+bv.sphere_radius = "仮想球半径"
+bv.sphere_radius_tooltip = "かさ歯車の基準円が接触する仮想球の半径"
+bv.gamma1 = "角度半径1"
+bv.gamma1_tooltip = "かさ歯車1の中心から基準円までの角度"
+bv.gamma2 = "角度半径2"
+bv.gamma2_tooltip = "かさ歯車2の中心から基準円までの角度"
 
 cr = LOCALE.crown
 cr.crown = "クラウンギア"
