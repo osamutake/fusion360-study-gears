@@ -164,6 +164,7 @@ MIT
 - [クラウンギア（フェースギア）](https://github.com/osamutake/fusion360-study-gears-docs/blob/master/crown-ja.md)
 - [つるまきたが歯車](https://github.com/osamutake/fusion360-study-gears-docs/blob/master/archimedean-ja.md)
 - [ゼネバ歯車](https://github.com/osamutake/fusion360-study-gears-docs/blob/master/geneva-ja.md)
+- [遊星歯車](https://github.com/osamutake/fusion360-study-gears-docs/blob/master/planetary-ja.md)
 
 <a href="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/basics-ja.md">
 <img title="歯車の基礎知識" src="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/module.png" height="100"/>
@@ -200,4 +201,7 @@ MIT
 </a>
 <a href="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/geneva-ja.md">
 <img title="ゼネバ歯車" src="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/geneva8.gif" height="100"/>
+</a>
+<a href="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/planetary-ja.md">
+<img title="遊星歯車" src="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/planetary25.gif" height="100"/>
 </a>
