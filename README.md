@@ -169,6 +169,7 @@ Spiral curves and cum shapes can be generated on this tab.
 - [Archimedean spiral gear](https://github.com/osamutake/fusion360-study-gears-docs/blob/master/archimedean.md)
 - [Geneva gear](https://github.com/osamutake/fusion360-study-gears-docs/blob/master/geneva.md)
 - [Planetary gear system](https://github.com/osamutake/fusion360-study-gears-docs/blob/master/planetary.md)
+- [Cam mechanism](https://github.com/osamutake/fusion360-study-gears-docs/blob/master/cam.md)
 
 <a href="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/basics.md">
 <img title="Basics of gears" src="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/module.png" height="100"/>
@@ -208,4 +209,7 @@ Spiral curves and cum shapes can be generated on this tab.
 </a>
 <a href="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/planetary.md">
 <img title="Planetary Gear System" src="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/planetary25.gif" height="100"/>
+</a>
+<a href="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/cam.md">
+<img title="Cam mechanism" src="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/cam14.gif" height="100"/>
 </a>
