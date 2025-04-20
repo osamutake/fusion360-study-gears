@@ -25,7 +25,7 @@ Enjoy!
   * Worm gear & Worm wheel
   * Bevel gear (can be spiral and/or internal)
   * Crown gear (can be helical)
-  * Spiral curve (to create cum and spring)
+  * Spiral curve (to create cam and spring)
 
 * Detailed customization of gears
   * Backlash
@@ -150,7 +150,7 @@ Crown gears, which is also known as face gears, can be generated on this tab.
 
 ## Spiral
 
-Spiral curves and cum shapes can be generated on this tab.
+Spiral curves and cam shapes can be generated on this tab.
 
 <img src="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/spiral1.png" width="120"/><img src="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/spiral2.png" width="120"/><img src="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/spiral3.png" width="120"/>
 

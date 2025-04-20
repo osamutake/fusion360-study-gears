@@ -112,7 +112,7 @@ def gear_cylindrical(
         sketch.profiles,
         key=lambda p: p.areaProperties().centroid.x,
         reverse=True,
-    )[0 : 2]
+    )[0:2]
     if beta == 0:
         # for non-helical gears, simply extrude the groove shape
         cut = fh.FeatureOperations.cut
@@ -120,14 +120,14 @@ def gear_cylindrical(
             comp, teeth_profiles, cut, thickness, True, True, participants=[disk]
         )
     else:
-        # Sweeping the groove profile with rotation angle is theoretically 
+        # Sweeping the groove profile with rotation angle is theoretically
         # the best way to cut a helical tooth shape. However, we found it
         # results in inaccurate results.
         # So, to workaround it, we use loft feature instead.
         #
         # # If we sweep the groove shape both in the thickness direction,
         # # we will have a seam at the center.
-        # # To avoid it, we first move the shape to one end of the thickness 
+        # # To avoid it, we first move the shape to one end of the thickness
         # # and sweep.
         # patch1 = fh.comp_patch(comp, teeth_profiles, fh.FeatureOperations.new_body)
         # matrix = fh.matrix_rotate(

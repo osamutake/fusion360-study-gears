@@ -8,7 +8,8 @@ from .lib import fusion_helper as fh
 from .lib.fusion_helper import vec, Vector
 from .gear_rack import RackParams
 
-# ウォームはラックの歯をらせん状に回転させて作る
+
+# sweep a rack along a spiral curve to generate worm
 def gear_worm(param: RackParams, tip_fillet: float, direction: int):
     sin_beta = param.worm * param.m / param.thickness
     angle = asin(sin_beta)
@@ -19,7 +20,7 @@ def gear_worm(param: RackParams, tip_fillet: float, direction: int):
     thickness = param.thickness
     length = param.length
 
-    # ラック形状を求め、対称性のいい位置に移動する
+    # generate the rack geometry
     r1, r2, fillet_center, fillet_radius = rack_geometry(
         param.m, param.alpha, param.fillet, mf, mk, param.rc, param.backlash
     )

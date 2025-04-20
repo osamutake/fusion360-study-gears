@@ -33,10 +33,11 @@ def gear_rack(param: RackParams, tip_fillet: float):
     length = param.length
     angle = param.angle
 
-    # ラック形状を求める
+    # calculate the rack geometry
     r1, r2, fillet_center, fillet_radius = rack_geometry(
         param.m, param.alpha, param.fillet, mf, param.mk, param.rc, param.backlash
     )
+    # translate points by 1/4 pitch
     [r1, r2, fillet_center] = [vec(0, pi * m / 4) + p for p in [r1, r2, fillet_center]]
 
     app = adsk.core.Application.get()
@@ -45,49 +46,53 @@ def gear_rack(param: RackParams, tip_fillet: float):
     def p3d(v: Vector):
         return adsk.core.Point3D.create(v.x, v.y, 0)
 
-    # 親コンポーネントを作成
-    comp = design.activeComponent.occurrences.addNewComponent(
+    # wrapper component
+    wrapper = design.activeComponent.occurrences.addNewComponent(
         adsk.core.Matrix3D.create()
     ).component
 
-    # 歯車コンポーネントを作成
-    gear_occurrence = comp.occurrences.addNewComponent(adsk.core.Matrix3D.create())
-    gear_occurrence.isGroundToParent = False
-    gear = gear_occurrence.component
-    gear.name = f"rack{format(param.m*10, '.2g')}M{format(round(param.length*10,2), 'g')}mm"
-    comp.name = gear.name[0:1].capitalize() + gear.name[1:]
+    # rack component
+    rack_occurrence = wrapper.occurrences.addNewComponent(adsk.core.Matrix3D.create())
+    rack_occurrence.isGroundToParent = False
+    rack = rack_occurrence.component
+    rack.name = f"rack{format(param.m*10, '.2g')}M{format(round(param.length*10,2), 'g')}mm"
+    wrapper.name = rack.name[0:1].capitalize() + rack.name[1:]
 
-    # ラックの外形を描画
-    outer: list[adsk.fusion.SketchLine] = []
+    # outline of the rack
+    outline: list[adsk.fusion.SketchLine] = []
     offset = vec(0, 0) if angle == 0 else vec(0, thickness / 2 * tan(abs(angle)))
-    sketch = gear.sketches.add(gear.xYConstructionPlane)
+    sketch = rack.sketches.add(rack.xYConstructionPlane)
     draw_line = sketch.sketchCurves.sketchLines.addByTwoPoints
     draw_arc = sketch.sketchCurves.sketchArcs.addByCenterStartEnd
-    # 右辺、下辺、左辺、上辺の順に描画
-    outer.append(draw_line(p3d(vec(r1.x, 0) + offset), p3d(vec(r1.x, -length) + offset)))
-    outer.append(draw_line(outer[-1].endSketchPoint, p3d(vec(r1.x - height, -length) + offset)))
-    outer.append(draw_line(outer[-1].endSketchPoint, p3d(vec(r1.x - height, 0) + offset)))
-    outer.append(draw_line(outer[-1].endSketchPoint, outer[0].startSketchPoint))
 
+    # draw right, bottom, left and top edges
+    outline.append(draw_line(p3d(vec(r1.x, 0) + offset), p3d(vec(r1.x, -length) + offset)))
+    outline.append(
+        draw_line(outline[-1].endSketchPoint, p3d(vec(r1.x - height, -length) + offset))
+    )
+    outline.append(draw_line(outline[-1].endSketchPoint, p3d(vec(r1.x - height, 0) + offset)))
+    outline.append(draw_line(outline[-1].endSketchPoint, outline[0].startSketchPoint))
+
+    # tip fillet
     if tip_fillet > 0:
-        outer[0].isConstruction = True
-        for l in outer:
+        outline[0].isConstruction = True
+        for l in outline:
             l.isFixed = True
-        outer.append(
-            draw_line(outer[0].startSketchPoint, p3d(vec(r1.x + tip_fillet * m, 0) + offset))
+        outline.append(
+            draw_line(outline[0].startSketchPoint, p3d(vec(r1.x + tip_fillet * m, 0) + offset))
         )
-        outer.append(
+        outline.append(
             draw_line(
-                outer[-1].endSketchPoint,
+                outline[-1].endSketchPoint,
                 p3d(vec(r1.x + tip_fillet * m, -length) + offset),
             )
         )
-        outer.append(draw_line(outer[-1].endSketchPoint, outer[0].endSketchPoint))
-        outer[4].isFixed = True
-        outer[6].isFixed = True
-        sketch.geometricConstraints.addVertical(outer[5])
+        outline.append(draw_line(outline[-1].endSketchPoint, outline[0].endSketchPoint))
+        outline[4].isFixed = True
+        outline[6].isFixed = True
+        sketch.geometricConstraints.addVertical(outline[5])
 
-    # 歯を描画
+    # tooth groove shape
     teeth: list[adsk.fusion.SketchLine | adsk.fusion.SketchArc] = []
     offset = -vec(0, pi * m / 2)
     teeth.append(draw_line(p3d(r1 + offset), p3d(r2 + offset)))
@@ -128,7 +133,7 @@ def gear_rack(param: RackParams, tip_fillet: float):
         # 中心線
         center = draw_line(p3d(vec(0, pi * m / 2) + offset), p3d(vec(m, pi * m / 2) + offset))
         center.startSketchPoint.isFixed = True
-        sketch.geometricConstraints.addCoincident(center.endSketchPoint, outer[5])
+        sketch.geometricConstraints.addCoincident(center.endSketchPoint, outline[5])
         sketch.geometricConstraints.addHorizontal(center)
         center.isConstruction = True
 
@@ -138,27 +143,27 @@ def gear_rack(param: RackParams, tip_fillet: float):
             p3d(vec(r1.x, r1.y + pi * m / 2) + offset),
         )
         sketch.geometricConstraints.addTangent(fillet, teeth[0])
-        sketch.geometricConstraints.addTangent(fillet, outer[5])
+        sketch.geometricConstraints.addTangent(fillet, outline[5])
         cons1 = sketch.geometricConstraints.addCoincident(fillet.centerSketchPoint, center)
-        cons2 = sketch.geometricConstraints.addCoincident(fillet.endSketchPoint, outer[0])
+        cons2 = sketch.geometricConstraints.addCoincident(fillet.endSketchPoint, outline[0])
 
         if (
-            outer[5].endSketchPoint.geometry.x
-            > outer[0].startSketchPoint.geometry.x + tip_fillet * m
+            outline[5].endSketchPoint.geometry.x
+            > outline[0].startSketchPoint.geometry.x + tip_fillet * m
         ):
             cons1.deleteMe()
             cons2.deleteMe()
             dim = sketch.sketchDimensions.addDistanceDimension(
-                outer[5].startSketchPoint,
-                outer[0].startSketchPoint,
+                outline[5].startSketchPoint,
+                outline[0].startSketchPoint,
                 cast(
                     adsk.fusion.DimensionOrientations,
                     adsk.fusion.DimensionOrientations.HorizontalDimensionOrientation,
                 ),
-                outer[0].startSketchPoint.geometry,
+                outline[0].startSketchPoint.geometry,
             )
             dim.value = tip_fillet * m
-            sketch.geometricConstraints.addCoincident(fillet.endSketchPoint, outer[5])
+            sketch.geometricConstraints.addCoincident(fillet.endSketchPoint, outline[5])
 
             fillet2 = draw_arc(
                 fillet.centerSketchPoint.geometry,
@@ -187,88 +192,86 @@ def gear_rack(param: RackParams, tip_fillet: float):
         p = fillet.endSketchPoint if fillet2 is None else fillet2.endSketchPoint
         teeth.append(draw_line(p, p3d(vec(r1.x + offset.x + tip_fillet + m, p.geometry.y))))
         teeth.append(draw_line(teeth[-1].endSketchPoint, teeth[-2].endSketchPoint))
-    for c in sketch.sketchCurves:
-        c.isFixed = True
-    for p in sketch.sketchPoints:
-        p.isFixed = True
 
-    # 棒を押し出す
+    fh.sketch_fix_all(sketch)
+
+    # extrude the outline
     if tip_fillet == 0:
-        rack = fh.comp_extrude(
-            gear, sketch.profiles, fh.FeatureOperations.new_body, thickness, True, True
+        body = fh.comp_extrude(
+            rack, sketch.profiles, fh.FeatureOperations.new_body, thickness, True, True
         ).bodies[0]
     else:
         profiles = sorted(sketch.profiles, key=lambda p: p.boundingBox.minPoint.x)[0:3]
-        rack = fh.comp_extrude(
-            gear, profiles, fh.FeatureOperations.new_body, thickness, True, True
+        body = fh.comp_extrude(
+            rack, profiles, fh.FeatureOperations.new_body, thickness, True, True
         ).bodies[0]
 
-    # 歯を押し出して切り取る
+    # cut the tooth groove
     if angle == 0:
+        # straight rack
         profiles = sorted(sketch.profiles, key=lambda p: p.boundingBox.minPoint.x)[1:]
         tooth = fh.comp_extrude(
-            gear,
+            rack,
             profiles,
             fh.FeatureOperations.cut,
             thickness,
             True,
             True,
-            participants=[rack],
+            participants=[body],
         )
     else:
-        # はすばラックは歯形のパッチを作成
+        # helical rack
         profiles = sorted(sketch.profiles, key=lambda p: p.boundingBox.minPoint.x)[1:]
-        patch = fh.comp_patch(gear, profiles, fh.FeatureOperations.new_body)
-        # y方向へ延ばす
+        patch = fh.comp_patch(rack, profiles, fh.FeatureOperations.new_body)
+        # scale in the Y direction to find transverse section
         patch = fh.comp_scale(
-            gear,
+            rack,
             [patch.bodies[0]],
-            gear.originConstructionPoint,
+            rack.originConstructionPoint,
             (1, 1 / cos(angle), 1),
         )
-        # 奥へ押す
+        # push the patch to the right position
         matrix = fh.matrix_translate(thickness / 2 * Vector(0, tan(angle), -1))
-        patch = fh.comp_move_free(gear, patch.bodies, matrix)
-        # 鏡像を作成
-        patch2 = fh.comp_mirror(gear, [patch.bodies[0]], gear.xYConstructionPlane)
-        # 角度分だけずらす
+        patch = fh.comp_move_free(rack, patch.bodies, matrix)
+        # generate the mirror image of the patch
+        patch2 = fh.comp_mirror(rack, [patch.bodies[0]], rack.xYConstructionPlane)
+        # shift the patch2 to the right position
         matrix = fh.matrix_translate(0, -thickness * tan(angle), 0)
-        patch2 = fh.comp_move_free(gear, [patch2.bodies[0]], matrix)
-        # 繋ぐ
+        patch2 = fh.comp_move_free(rack, [patch2.bodies[0]], matrix)
+        # connect the two patches
         tooth = fh.comp_loft(
-            gear, fh.FeatureOperations.cut, [patch.faces[0], patch2.faces[0]], [rack]
+            rack, fh.FeatureOperations.cut, [patch.faces[0], patch2.faces[0]], [body]
         )
-        # いらななくなったサーフェスを削除
-        fh.comp_remove(gear, [p.bodies[0] for p in [patch, patch2]])
+        # remove used patches
+        fh.comp_remove(rack, [p.bodies[0] for p in [patch, patch2]])
 
-    # 歯を複製する
+    # duplicate the tooth groove
     quantity = floor((length - thickness * tan(abs(angle))) / (pi * m / cos(angle)))
     fh.comp_rectangular_pattern(
-        gear, [tooth], gear.yConstructionAxis, quantity, -pi * m / cos(angle), True
+        rack, [tooth], rack.yConstructionAxis, quantity, -pi * m / cos(angle), True
     )
 
-    # ジョイントを作成
+    # create joint
     fh.comp_joint_slider(
-        comp,
-        gear.originConstructionPoint,
-        comp.originConstructionPoint,
+        wrapper,
+        rack.originConstructionPoint,
+        wrapper.originConstructionPoint,
         adsk.fusion.JointDirections.YAxisJointDirection,
     )
 
-    sketch2 = gear.sketches.add(gear.xYConstructionPlane)
+    # draw the reference line
+    sketch2 = rack.sketches.add(rack.xYConstructionPlane)
     line = sketch2.sketchCurves.sketchLines.addByTwoPoints(
         adsk.core.Point3D.create(0, 0, 0),
         adsk.core.Point3D.create(0, -length, 0),
     )
     line.isConstruction = True
 
+    # indicate one pitch
     line = sketch2.sketchCurves.sketchLines.addByTwoPoints(
         adsk.core.Point3D.create(param.mk * param.m, 0, 0),
         adsk.core.Point3D.create(param.mk * param.m, -param.m * pi / cos(param.angle), 0),
     )
     line.isConstruction = True
 
-    for c in sketch2.sketchCurves:
-        c.isFixed = True
-    for p in sketch2.sketchPoints:
-        p.isFixed = True
+    fh.sketch_fix_all(sketch2)

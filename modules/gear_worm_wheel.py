@@ -11,7 +11,7 @@ from .lib.function import minimize, find_root
 from . import gear_curve
 from .lib import fusion_helper as fh
 from .lib.fusion_helper import Vector, vec, radius_from_3points
-from .lib.segment import Line, Arc, Segments
+from .gear_worm_wheel_segment import Line, Arc, Segments
 from .lib.spline import evenly_spaced_points_on_spline, interpolate
 
 

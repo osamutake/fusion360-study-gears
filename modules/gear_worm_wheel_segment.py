@@ -1,7 +1,7 @@
 from collections.abc import Callable
 import math
 from typing import override
-from .fusion_helper import Vector
+from .lib.fusion_helper import Vector
 
 Translation = tuple[float, float, float, float, float, float]
 identical_translation = (1.0, 0.0, 0.0, 0.0, 1.0, 0.0)

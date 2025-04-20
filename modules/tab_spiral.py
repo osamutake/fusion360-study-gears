@@ -9,6 +9,8 @@ from .lib import spline
 from .locales import LOCALE
 
 l = LOCALE.spiral
+
+
 class TabInput(fh.TabInput[command.Command]):
     id = "spiral_tab"
     name = l.spiral

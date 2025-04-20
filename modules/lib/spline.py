@@ -1,4 +1,7 @@
-# Akima spline interpolation
+"""
+Akima spline interpolation.
+interpolation(xs: list[float], ys: list[float], periodic: bool = False) -> Callable[[float], float]
+"""
 # https://en.wikipedia.org/wiki/Akima_spline
 # https://github.com/Juul/akima-interpolator/tree/master
 

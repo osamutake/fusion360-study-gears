@@ -5,7 +5,7 @@ from collections.abc import Callable
 from dataclasses import dataclass
 from math import ceil, sin, cos, tan, pi
 
-from .lib.curve import Curve, CurveType, closest_point_x_desc, cross_point_x_desc
+from .gear_curve_curve import Curve, CurveType, closest_point_x_desc, cross_point_x_desc
 from .lib.function import find_root, minimize
 from .lib.fusion_helper import Vector, vec
 

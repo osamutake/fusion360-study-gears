@@ -12,6 +12,8 @@ from .locales import LOCALE
 EPS = 1e-5
 
 l = LOCALE.rack_worm
+
+
 class TabInput(fh.TabInput[command.Command]):
     id = "rack_tab"
     name = l.rack_worm

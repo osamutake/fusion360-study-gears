@@ -3,7 +3,7 @@ from copy import copy
 from math import inf
 from enum import Enum
 
-from .fusion_helper import Vector
+from .lib.fusion_helper import Vector
 
 
 class CurveType(Enum):
