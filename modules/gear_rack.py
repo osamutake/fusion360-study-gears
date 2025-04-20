@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from math import cos, floor, pi, tan
+from math import cos, ceil, pi, tan
 from typing import cast
 
 import adsk.core, adsk.fusion
@@ -201,7 +201,7 @@ def gear_rack(param: RackParams, tip_fillet: float):
             rack, sketch.profiles, fh.FeatureOperations.new_body, thickness, True, True
         ).bodies[0]
     else:
-        profiles = sorted(sketch.profiles, key=lambda p: p.boundingBox.minPoint.x)[0:3]
+        profiles = sorted(sketch.profiles, key=lambda p: p.boundingBox.maxPoint.x)[0:-1]
         body = fh.comp_extrude(
             rack, profiles, fh.FeatureOperations.new_body, thickness, True, True
         ).bodies[0]
@@ -246,9 +246,9 @@ def gear_rack(param: RackParams, tip_fillet: float):
         fh.comp_remove(rack, [p.bodies[0] for p in [patch, patch2]])
 
     # duplicate the tooth groove
-    quantity = floor((length - thickness * tan(abs(angle))) / (pi * m / cos(angle)))
+    quantity = ceil((length - thickness * tan(abs(angle))) / (pi * m / cos(angle)))
     fh.comp_rectangular_pattern(
-        rack, [tooth], rack.yConstructionAxis, quantity, -pi * m / cos(angle), True
+        rack, [tooth], rack.yConstructionAxis, 2 * quantity, -pi * m / cos(angle), True, True
     )
 
     # create joint
