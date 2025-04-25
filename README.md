@@ -170,6 +170,7 @@ Spiral curves and cam shapes can be generated on this tab.
 - [Geneva gear](https://github.com/osamutake/fusion360-study-gears-docs/blob/master/geneva.md)
 - [Planetary gear system](https://github.com/osamutake/fusion360-study-gears-docs/blob/master/planetary.md)
 - [Cam mechanism](https://github.com/osamutake/fusion360-study-gears-docs/blob/master/cam.md)
+- [Intermittent gear](https://github.com/osamutake/fusion360-study-gears-docs/blob/master/intermittent.md)
 
 <a href="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/basics.md">
 <img title="Basics of gears" src="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/module.png" height="100"/>
@@ -212,4 +213,7 @@ Spiral curves and cam shapes can be generated on this tab.
 </a>
 <a href="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/cam.md">
 <img title="Cam mechanism" src="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/cam14.gif" height="100"/>
+</a>
+<a href="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/intermittent.md">
+<img title="Intermittent Gear" src="https://github.com/osamutake/fusion360-study-gears-docs/blob/master/assets/intermittent40.gif" height="100"/>
 </a>
