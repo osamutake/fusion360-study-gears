@@ -76,6 +76,8 @@ bv.gamma1 = "角度半径1"
 bv.gamma1_tooltip = "かさ歯車1の中心から基準円までの角度"
 bv.gamma2 = "角度半径2"
 bv.gamma2_tooltip = "かさ歯車2の中心から基準円までの角度"
+bv.printable = "3Dプリンタ用"
+bv.printable_tooltip = "3Dプリンタで印刷しやすい形状を生成する"
 
 cr = LOCALE.crown
 cr.crown = "クラウンギア"
