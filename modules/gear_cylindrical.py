@@ -152,7 +152,7 @@ def gear_cylindrical(
 
         # create rotated patches for loft
         patches: list[adsk.fusion.BRepBody] = []
-        n = max(3, ceil(thickness * tan(beta) / (mn * z) / (2 * pi / 18)))
+        n = max(5, ceil(thickness * tan(beta) / (mn * z) / (2 * pi / 18)))
         for i in range(n):
             zz = i / (n - 1) * thickness / 2
             patches.append(
