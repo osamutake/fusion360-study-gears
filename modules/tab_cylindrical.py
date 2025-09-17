@@ -176,6 +176,8 @@ def generate_gear(
     wrapper_occurrence = design.activeComponent.occurrences.addNewComponent(
         adsk.core.Matrix3D.create()
     )
+    if design.activeOccurrence is not None:
+        wrapper_occurrence = wrapper_occurrence.createForAssemblyContext(design.activeOccurrence)
     wrapper_occurrence.isGroundToParent = False
     wrapper = wrapper_occurrence.component
 
@@ -250,5 +252,9 @@ def generate_gear(
             pi * params.m / cos(helix_angle) * 2,
         )
         wrapper_occurrence.isGroundToParent = False
-        design.activeComponent.transformOccurrences([wrapper_occurrence], [matrix], False)
+        # # this causes exception generation when the worm wheel is generated under a component
+        # # ``This method is only valid when called on the root component.``
+        # design.activeComponent.transformOccurrences([wrapper_occurrence], [matrix], False)
+
+        wrapper_occurrence.transform2 = matrix
         design.snapshots.add()  # capture the position
