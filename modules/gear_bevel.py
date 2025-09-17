@@ -331,6 +331,7 @@ def generate_gear(
     flip: Literal[1, -1],
     phi: float,
     internal: bool,
+    printable: bool = False,
 ):
     r0 = params.r0
     m = params.m
@@ -382,15 +383,19 @@ def generate_gear(
     def base_donut_and_axis():
         """generate the base body donut of the gear and rotational axis"""
 
+        r1 = r0
+        r2 = r0 - width
         # draw cross section of the donut
         sketch2 = gear.sketches.add(gear.xYConstructionPlane)
         sketch2.isComputeDeferred = True
+        # points on the outer side of the donut
         if not internal:
             va = Vector(r0, 0, -mk * m * flip)  # tip
-            vb = Vector(r0, 0, (mf + 1) * m * flip)  # bottom
+            vb = Vector(r0, 0, (mf + 1) * m * flip)  # bottom - m
         else:
             va = Vector(r0, 0, mk * m * flip)  # tip
-            vb = Vector(r0, 0, -(mf + 1) * m * flip)  # bottom
+            vb = Vector(r0, 0, -(mf + 1) * m * flip)  # bottom - m
+        # points on the inner side of the donut
         vas = va * ((r0 - width) / r0)  # scale the tip point
         vbs = vb * ((r0 - width) / r0)  # scale the bottom point
         la = fh.sketch_line(sketch2, va, vb)
@@ -407,17 +412,51 @@ def generate_gear(
             else:
                 le = fh.sketch_line(sketch2, lc.endSketchPoint, vax0)  # vax1, vax0
                 sketch2.geometricConstraints.addCoincident(ld.endSketchPoint, le)
+            fh.sketch_fix_all(sketch2)
+            if printable and abs((va - vb).normalize().dot(axis.normalize())) < 1 / sqrt(2):
+                # too shallow side wall was detected
+                la.isConstruction = True
+                lf = fh.sketch_line(sketch2, la.endSketchPoint, vax1 + (vb - vax1) * 1.2)
+                sketch2.geometricConstraints.addCoincident(lf.endSketchPoint, lc)
+                lg = fh.sketch_line(sketch2, lf.endSketchPoint, la.startSketchPoint)
+                sketch2.sketchDimensions.addAngularDimension(
+                    le, lg, fh.point3d((va + vbs) / 2)
+                ).value = (pi / 4)
+                r1 = lf.endSketchPoint.geometry.distanceTo(fh.point3d())
         else:
-            fh.sketch_line(sketch2, la.endSketchPoint, lb.endSketchPoint)  # vb, vbs
+            lc = fh.sketch_line(sketch2, la.endSketchPoint, lb.endSketchPoint)  # vb, vbs
             if abs(vax1 - vax2) > abs(vax0 - vax2):
                 le = fh.sketch_line(sketch2, vax2, vax1)
             else:
                 le = fh.sketch_line(sketch2, vax2, vax0)
             vc = Vector(r0, 0, -mf * m * flip)  # tooth bottom
             vcs = vc * ((r0 - width) / r0)  # scale vc
-            fh.sketch_line(sketch2, vc, vcs)
+            lh = fh.sketch_line(sketch2, vc, vcs)
+            fh.sketch_fix_all(sketch2)
 
-        fh.sketch_fix_all(sketch2)
+            if printable:
+                if abs((vbs - vb).normalize().dot(axis.normalize())) < 1 / sqrt(2):
+                    # too shallow outer wall was detected
+                    lc.isConstruction = True
+                    ld = fh.sketch_line(sketch2, lb.endSketchPoint, vbs + (vbs - vax2) * 0.01)
+                    sketch2.geometricConstraints.addPerpendicular(ld, le)
+                    lf = fh.sketch_line(sketch2, ld.endSketchPoint, la.endSketchPoint)
+                    sketch2.sketchDimensions.addAngularDimension(le, lf, fh.point3d(va)).value = (
+                        pi / 4
+                    )
+                if abs((vbs - vas).normalize().dot(axis.normalize())) < 1 / sqrt(2):
+                    # too shallow inner wall was detected
+                    lb.isConstruction = True
+                    ld = fh.sketch_line(sketch2, lb.endSketchPoint, vbs - (vbs - vax2) * 0.01)
+                    sketch2.geometricConstraints.addPerpendicular(ld, le)
+                    lf = fh.sketch_line(sketch2, ld.endSketchPoint, lb.startSketchPoint)
+                    sketch2.sketchDimensions.addAngularDimension(
+                        le, lf, fh.point3d((vbs + vax2) / 3)
+                    ).value = (pi / 4)
+                    lg = fh.sketch_line(sketch2, lh.endSketchPoint, vcs-(vcs-vc)*0.1)
+                    sketch2.geometricConstraints.addCoincident(lg.endSketchPoint, ld)
+                    r2 = lg.endSketchPoint.geometry.distanceTo(fh.point3d())
+
         sketch2.isComputeDeferred = False
 
         # create the donut by revolving the sketch around the axis
@@ -459,7 +498,7 @@ def generate_gear(
         fh.sketch_fix_all(sketch3)
         sketch3.isComputeDeferred = False
 
-        return donut, donut2, ax.createForAssemblyContext(gear_occurrence)
+        return donut, donut2, ax.createForAssemblyContext(gear_occurrence), r1, r2
 
     def duplicate_and_loft(
         patch: adsk.fusion.BRepBody,
@@ -472,8 +511,8 @@ def generate_gear(
 
         # determine the lofting range of the tooth groove shape
         extension = 1.02
-        scale_start = extension
-        scale_end = (r0 - width) / r0 / extension
+        scale_start = r1 / r0 * extension
+        scale_end = r2 / r0 / extension
         scale_n = 1 if beta == 0 else max(5, ceil(abs(spiral_angle(scale_end)) / pi * 40))
 
         # create the tooth patches for lofting by scaling and rotating the original patch
@@ -494,7 +533,7 @@ def generate_gear(
 
     # generate the gear by cutting the donut with the tooth groove shape
     patch = generate_patch(groove_shape)
-    donut, donut2, axis_line = base_donut_and_axis()
+    donut, donut2, axis_line, r1, r2 = base_donut_and_axis()
     fh.app_refresh()
 
     op = adsk.fusion.FeatureOperations.CutFeatureOperation
@@ -527,9 +566,11 @@ def generate_gear(
     fh.app_refresh()
 
     # generate joint between the gear and wrapper
-    # This does not work for the internal gear at this moment.
+    # This code does not work correctly for the internal gear at this moment.
     # Somehow, the axis_line before transformation is referred
     # even after design.snapshots.add() call.
+    # Replacing `axis_line` with `axis_line.nativeObject.createForAssemblyContext(gear_occurrence)`
+    # did not help.
     fh.comp_built_joint_revolute(
         wrapper,
         gear_occurrence,

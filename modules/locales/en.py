@@ -83,6 +83,8 @@ class Bevel:
     gamma1_tooltip = "The angular radius of gear1's pitch circle."
     gamma2 = "Angular radius 2"
     gamma2_tooltip = "The angular radius of gear2's pitch circle."
+    printable = "Printable"
+    printable_tooltip = "Make the gears 3D printer friendly."
 
 
 @dataclass

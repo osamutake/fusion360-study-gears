@@ -28,6 +28,7 @@ class TabInput(fh.TabInput[command.Command]):
     sphere_radius: adsk.core.ValueCommandInput
     gamma1: adsk.core.ValueCommandInput
     gamma2: adsk.core.ValueCommandInput
+    printable: adsk.core.BoolValueCommandInput
 
     @override
     def on_created(self, _: adsk.core.CommandCreatedEventArgs, inputs: adsk.core.CommandInputs):
@@ -53,6 +54,8 @@ class TabInput(fh.TabInput[command.Command]):
             inputs, "bevel_gamma2", l.gamma2, "deg", "0", is_enabled=False
         )
         self.gamma2.tooltip = l.gamma2_tooltip
+        self.printable = inputs.addBoolValueInput("bevel_printable", l.printable, True, "", True)
+        self.printable.tooltip = l.printable_tooltip
 
     @override
     def on_changed(self, args: adsk.core.InputChangedEventArgs | None):
@@ -132,6 +135,7 @@ class TabInput(fh.TabInput[command.Command]):
             1,
             0,
             params.internal == 1,
+            printable=self.printable.value,
         )
         gear1_occurrence.component.name = f"bevel{format(round(params.m*10,2),"g")}M{params.z1}T{format(round(params.sigma/pi*180,2), "g")}deg"
 
@@ -146,6 +150,7 @@ class TabInput(fh.TabInput[command.Command]):
             -1,
             phi,
             False,
+            printable=self.printable.value,
         )
         gear2_occurrence.component.name = f"bevel{format(round(params.m*10,2),"g")}M{params.z2}T{format(round(params.sigma/pi*180,2), "g")}deg"
 
