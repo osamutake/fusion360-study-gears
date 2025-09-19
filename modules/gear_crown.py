@@ -363,8 +363,12 @@ def gear_crown(
         sk.isVisible = False
 
     # cut the tooth groove from the donut
-    loft1 = fh.comp_loft(gear, fh.FeatureOperations.cut, [p[0].faces[0] for p in patches], donut)
-    loft2 = fh.comp_loft(gear, fh.FeatureOperations.cut, [p[1].faces[0] for p in patches], donut)
+    loft1 = fh.comp_loft(
+        gear, fh.FeatureOperations.new_body, [p[0].faces[0] for p in patches]
+    ).bodies[0]
+    loft2 = fh.comp_loft(
+        gear, fh.FeatureOperations.new_body, [p[1].faces[0] for p in patches]
+    ).bodies[0]
     fh.app_refresh()
 
     # remove the used patches
@@ -372,7 +376,8 @@ def gear_crown(
     fh.comp_remove(gear, [p[1] for p in patches])
 
     # create a circular pattern of the tooth groove
-    fh.comp_circular_pattern(gear, [loft1, loft2], gear.zConstructionAxis, z)
+    lofts = fh.comp_circular_pattern(gear, [loft1, loft2], gear.zConstructionAxis, z).bodies
+    fh.comp_combine(gear, donut, lofts, fh.FeatureOperations.cut)
 
     fh.camera_setup(camera_previous)
 
