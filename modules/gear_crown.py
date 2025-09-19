@@ -348,12 +348,12 @@ def gear_crown(
     patches: list[tuple[adsk.fusion.BRepBody, adsk.fusion.BRepBody]] = []
 
     # generate the groove cross sections
-    extension = 1.02
+    extension = 1.1
     phi_range = extension * (w2 + w1) * params.m * factor * params.z / z
     n = max(ceil((w2 + w1) / 0.5), ceil(phi_range / pi * 180 / 5))
     fh.app_refresh()
     for i in range(0, n + 1):
-        t = extension * (-w2 + (w2 + w1) * i / n)
+        t = extension * (-w2 + (w2 + w1) * i / n) * params.m
         involute, undercut = calc_tooth_profiles(pinion, params, z, helix_angle, t)
         patches.append((generate_patch(sketch1, involute), generate_patch(sketch2, undercut)))
         fh.app_refresh()
