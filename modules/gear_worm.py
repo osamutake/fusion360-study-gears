@@ -33,13 +33,16 @@ def gear_worm(param: RackParams, tip_fillet: float, direction: int):
         return adsk.core.Point3D.create(v.x, v.y, 0)
 
     # 親コンポーネントを作成
-    comp = design.activeComponent.occurrences.addNewComponent(
-        adsk.core.Matrix3D.create()
-    ).component
+    occurrence = design.activeComponent.occurrences.addNewComponent(adsk.core.Matrix3D.create())
+    if design.activeOccurrence is not None:
+        occurrence = occurrence.createForAssemblyContext(design.activeOccurrence)
+    occurrence.isGroundToParent = False
+    comp = occurrence.component
 
     # 歯車コンポーネントを作成
-    gear_occurrence = comp.occurrences.addNewComponent(adsk.core.Matrix3D.create())
-    gear_occurrence.isGroundToParent = False
+    gear_occurrence = comp.occurrences.addNewComponent(
+        adsk.core.Matrix3D.create()
+    ).createForAssemblyContext(occurrence)
     gear = gear_occurrence.component
     gear.name = f"worm{format(param.m*10, '.2g')}M{format(round(param.length*10,2), 'g')}mm"
     comp.name = gear.name[0:1].capitalize() + gear.name[1:]
@@ -345,6 +348,7 @@ def gear_worm(param: RackParams, tip_fillet: float, direction: int):
         gear,
         spiral2.bodies[0],
         fh.matrix_rotate(pi, translation=fh.vector3d(z=(pi * param.worm * m / cos(angle)) / 2)),
+        gear_occurrence,
     )
 
     # 画面を更新
