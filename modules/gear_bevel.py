@@ -416,12 +416,12 @@ def generate_gear(
             if printable and abs((va - vb).normalize().dot(axis.normalize())) < 1 / sqrt(2):
                 # too shallow side wall was detected
                 la.isConstruction = True
-                lf = fh.sketch_line(sketch2, la.endSketchPoint, vax1 + (vb - vax1) * 1.2)
+                lf = fh.sketch_line(sketch2, la.endSketchPoint, vax1 + (vb - vax1) * 1.01)
                 sketch2.geometricConstraints.addCoincident(lf.endSketchPoint, lc)
                 lg = fh.sketch_line(sketch2, lf.endSketchPoint, la.startSketchPoint)
                 sketch2.sketchDimensions.addAngularDimension(
                     le, lg, fh.point3d((va + vbs) / 2)
-                ).value = (pi / 4)
+                ).value = pi / 4
                 r1 = lf.endSketchPoint.geometry.distanceTo(fh.point3d())
         else:
             lc = fh.sketch_line(sketch2, la.endSketchPoint, lb.endSketchPoint)  # vb, vbs
