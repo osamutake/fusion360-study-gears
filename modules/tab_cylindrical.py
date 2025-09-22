@@ -188,7 +188,7 @@ def generate_gear(
         )
     else:
         gear_cylindrical(
-            wrapper,
+            wrapper_occurrence,
             params,
             thickness,
             helix_angle,

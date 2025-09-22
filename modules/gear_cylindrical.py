@@ -9,7 +9,7 @@ from .lib.fusion_helper import Vector
 
 
 def gear_cylindrical(
-    parent: adsk.fusion.Component,
+    parent_occurrence: adsk.fusion.Occurrence,
     params: gear_curve.GearParams,
     thickness: float,
     beta: float,
@@ -19,10 +19,13 @@ def gear_cylindrical(
     m = params.m
 
     # Create a new component by creating a new occurrence.
-    comp = parent.occurrences.addNewComponent(adsk.core.Matrix3D.create()).component
+    occurrence = parent_occurrence.component.occurrences.addNewComponent(
+        adsk.core.Matrix3D.create()
+    ).createForAssemblyContext(parent_occurrence)
+    comp = occurrence.component
 
     # Create a new sketch on the xy plane.
-    sketch = comp.sketches.add(comp.xYConstructionPlane)
+    sketch = comp.sketches.add(comp.xYConstructionPlane).createForAssemblyContext(occurrence)
     sketch.isComputeDeferred = True
 
     # Generate tooth profile with adjusted parameters for helical angle.
@@ -164,9 +167,11 @@ def gear_cylindrical(
                     -2 * zz * tan(beta) / (mn * z),
                     comp.zConstructionAxis.geometry.direction,
                     comp.originConstructionPoint.geometry,
-                    fh.vector3d(0, 0, -zz),
+                    fh.vector3d(
+                        fh.Vector(comp.zConstructionAxis.geometry.direction).normalize(-zz)
+                    ),
                 )
-                fh.comp_move_free(comp, patches[-1], matrix)
+                fh.comp_move_free(comp, patches[-1], matrix, occurrence)
 
                 patches.insert(
                     0,
@@ -176,9 +181,11 @@ def gear_cylindrical(
                     2 * zz * tan(beta) / (mn * z),
                     comp.zConstructionAxis.geometry.direction,
                     comp.originConstructionPoint.geometry,
-                    fh.vector3d(0, 0, zz),
+                    fh.vector3d(
+                        fh.Vector(comp.zConstructionAxis.geometry.direction).normalize(zz)
+                    ),
                 )
-                fh.comp_move_free(comp, patches[0], matrix)
+                fh.comp_move_free(comp, patches[0], matrix, occurrence)
 
         tooth_feature = fh.comp_loft(
             comp, fh.FeatureOperations.cut, [p.faces[0] for p in patches], disk
