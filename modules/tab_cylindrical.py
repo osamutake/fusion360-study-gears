@@ -243,9 +243,7 @@ def generate_gear(
 
     # move worm wheel to the meshing position
     if worm_spirals > 0:
-        matrix = fh.matrix_rotate(
-            pi / 2, wrapper.xConstructionAxis.geometry.direction, fh.point3d()
-        )
+        matrix = fh.matrix_rotate(pi / 2, fh.vector3d(x=1), fh.point3d())
         matrix.translation = fh.vector3d(
             params.m * (params.z / cos(helix_angle) / 2 + params.shift) + worm_diameter / 2,
             0,
@@ -256,5 +254,6 @@ def generate_gear(
         # # ``This method is only valid when called on the root component.``
         # design.activeComponent.transformOccurrences([wrapper_occurrence], [matrix], False)
 
+        matrix.transformBy(wrapper_occurrence.transform2)
         wrapper_occurrence.transform2 = matrix
         design.snapshots.add()  # capture the position
