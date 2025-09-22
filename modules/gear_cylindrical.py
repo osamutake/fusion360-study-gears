@@ -158,11 +158,12 @@ def gear_cylindrical(
         n = max(5, ceil(thickness * tan(beta) / (mn * z) / (2 * pi / 18)))
         for i in range(n):
             zz = i / (n - 1) * thickness / 2
-            patches.append(
-                fh.comp_patch(comp, teeth_profiles, fh.FeatureOperations.new_body).bodies[0]
-            )
-
-            if i > 0:
+            if i == 0:
+                patches.append(
+                    fh.comp_patch(comp, teeth_profiles, fh.FeatureOperations.new_body).bodies[0]
+                )
+            else:
+                patches.append(fh.comp_copy(comp, patches[i-1]).bodies[0])
                 matrix = fh.matrix_rotate(
                     -2 * zz * tan(beta) / (mn * z),
                     comp.zConstructionAxis.geometry.direction,
@@ -175,7 +176,7 @@ def gear_cylindrical(
 
                 patches.insert(
                     0,
-                    fh.comp_patch(comp, teeth_profiles, fh.FeatureOperations.new_body).bodies[0],
+                    fh.comp_copy(comp, patches[i-1]).bodies[0]
                 )
                 matrix = fh.matrix_rotate(
                     2 * zz * tan(beta) / (mn * z),
