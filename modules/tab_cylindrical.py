@@ -94,6 +94,7 @@ class TabInput(fh.TabInput[command.Command]):
                 self.helix_angle.value = asin(worm_spirals * module / worm_diameter)
         elif args and args.input.id == "worm_wheel":
             self.helix_angle.value = 0
+        helix_angle = self.helix_angle.value
 
         if internal:
             self.worm_wheel.value = False
@@ -104,6 +105,7 @@ class TabInput(fh.TabInput[command.Command]):
 
         # calculate reference diameter
         self.dp.value = module / cos(helix_angle) * number_teeth
+        dp = self.dp.value
 
         # max/min values for diameter
         if internal:
