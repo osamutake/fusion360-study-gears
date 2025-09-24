@@ -47,9 +47,11 @@ def gear_rack(param: RackParams, tip_fillet: float):
         return adsk.core.Point3D.create(v.x, v.y, 0)
 
     # wrapper component
-    wrapper = design.activeComponent.occurrences.addNewComponent(
+    wrapper_occurrence = design.activeComponent.occurrences.addNewComponent(
         adsk.core.Matrix3D.create()
-    ).component
+    )
+    wrapper_occurrence.isGroundToParent = False
+    wrapper = wrapper_occurrence.component
 
     # rack component
     rack_occurrence = wrapper.occurrences.addNewComponent(adsk.core.Matrix3D.create())
