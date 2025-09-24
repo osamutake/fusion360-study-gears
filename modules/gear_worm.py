@@ -43,6 +43,7 @@ def gear_worm(param: RackParams, tip_fillet: float, direction: int):
     gear_occurrence = comp.occurrences.addNewComponent(
         adsk.core.Matrix3D.create()
     ).createForAssemblyContext(occurrence)
+    gear_occurrence.isGroundToParent = False
     gear = gear_occurrence.component
     gear.name = f"worm{format(param.m*10, '.2g')}M{format(round(param.length*10,2), 'g')}mm"
     comp.name = gear.name[0:1].capitalize() + gear.name[1:]
